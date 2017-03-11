@@ -1,0 +1,14 @@
+[package]
+name = "cargo-raze-vendor"
+version = "0.1.0"
+authors = ["Alex McArther <acmcarther@gmail.com>"]
+readme = "README.md"
+keywords = ["subcommand"]
+repository = "https://github.com/acmcarther/cargo-raze-vendor"
+description = """
+A Cargo subcommand to help integrate Cargo dependencies into a Bazel project.
+"""
+
+[dependencies]
+cargo = "0.16"
+rustc-serialize = "0.3"
