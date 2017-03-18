@@ -1,0 +1,22 @@
+package(default_visibility = [ "//visibility:public" ])
+licenses(["notice"])
+
+load(
+  "@io_bazel_rules_rust//rust:rust.bzl",
+  "rust_library",
+)
+
+rust_library(
+  name = "fs2",
+  srcs = glob(["lib.rs", "src/**/*.rs"]),
+  deps = [
+    "//kernel32-sys-0.2.2:kernel32_sys",
+    "//libc-0.2.21:libc",
+    "//winapi-0.2.8:winapi",
+  ],
+  rustc_flags = [
+    "--cap-lints warn"
+  ],
+  crate_features = [ 
+  ],
+)

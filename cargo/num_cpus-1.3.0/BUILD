@@ -1,0 +1,20 @@
+package(default_visibility = [ "//visibility:public" ])
+licenses(["notice"])
+
+load(
+  "@io_bazel_rules_rust//rust:rust.bzl",
+  "rust_library",
+)
+
+rust_library(
+  name = "num_cpus",
+  srcs = glob(["lib.rs", "src/**/*.rs"]),
+  deps = [
+    "//libc-0.2.21:libc",
+  ],
+  rustc_flags = [
+    "--cap-lints warn"
+  ],
+  crate_features = [ 
+  ],
+)
