@@ -289,8 +289,8 @@ rust_library(
         "--cap-lints warn",
     ],
     crate_features = [
-        "regex",
         "default",
+        "regex",
     ],
 )
 """
@@ -496,13 +496,13 @@ rust_library(
         "--cap-lints warn",
     ],
     crate_features = [
-        "libgit2-sys",
-        "ssh",
         "curl",
-        "openssl-probe",
-        "https",
         "default",
+        "https",
+        "libgit2-sys",
+        "openssl-probe",
         "openssl-sys",
+        "ssh",
     ],
 )
 """
@@ -711,12 +711,12 @@ rust_library(
         "--cap-lints warn",
     ],
     crate_features = [
+        "curl",
+        "curl-sys",
+        "https",
+        "libssh2-sys",
         "openssl-sys",
         "ssh",
-        "curl-sys",
-        "libssh2-sys",
-        "curl",
-        "https",
     ],
 )
 """
@@ -953,8 +953,8 @@ rust_library(
         "--cap-lints warn",
     ],
     crate_features = [
-        "stream",
         "default",
+        "stream",
     ],
 )
 """
@@ -1528,8 +1528,8 @@ rust_library(
         "--cap-lints warn",
     ],
     crate_features = [
-        "rustc-serialize",
         "default",
+        "rustc-serialize",
     ],
 )
 """

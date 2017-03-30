@@ -53,6 +53,22 @@ macro_rules! ROOT_WORKSPACE_TEMPLATE {() => (r#"load(
 )
 {}"#)}
 
+/** Define parser for --overrides flag */
+fn isnt_plus(chr: char) -> bool { chr != '+' }
+fn isnt_colon(chr: char) -> bool { chr != ':' }
+fn isnt_comma(chr: char) -> bool { chr != ',' }
+named!(parse_override( &str ) -> DependencyOverride,
+   do_parse!(
+     name: map!(take_while_s!(isnt_plus), str::to_owned) >>
+     char!('+') >>
+     version: map!(take_while_s!(isnt_colon), str::to_owned) >>
+     char!(':') >>
+     bazel_path: map!(take_while_s!(isnt_comma), str::to_owned) >>
+     (DependencyOverride { name: name, version: version, bazel_path: bazel_path })
+   )
+);
+named!(parse_overrides( &str ) -> Vec<DependencyOverride>, separated_list!(char!(','), parse_override));
+
 
 #[derive(RustcDecodable)]
 struct Options {
@@ -74,10 +90,10 @@ struct DependencyOverride {
 
 fn main() {
     cargo::execute_main_without_stdin(real_main, false, r#"
-Vendor all dependencies for a project locally
+Generate a Bazel WORKSPACE consisting of resolved dependencies for the current platform
 
 Usage:
-    cargo raze vendor [options] [<path>]
+    cargo raze [options] [<path>]
 
 Options:
     -h, --help               Print this message
@@ -101,8 +117,8 @@ fn real_main(options: Options, config: &Config) -> CliResult<Option<()>> {
     let local_dst = Path::new(options.arg_path.as_ref().unwrap_or(&default));
 
     let default_overrides = "".to_string();
-    // TODO(acmcarther): fix below NO GOOD VERY BAD NO NO TIMES
-    // Context: nom::ErrorKind isn't error_chain-able, so i'm unwrapping and walking away.
+    // TODO(acmcarther): Fix unwrap. I'm unwrapping here temporarily because Nom's err is hard to
+    // convert to CargoError
     let overrides = parse_overrides(&options.flag_overrides.as_ref().unwrap_or(&default_overrides)).to_result().unwrap();
     try!(fs::create_dir_all(&local_dst).chain_error(|| {
         human(format!("failed to create: `{}`", local_dst.display()))
@@ -165,7 +181,6 @@ fn real_main(options: Options, config: &Config) -> CliResult<Option<()>> {
     let mut crate_decls = Vec::new();
 
     for id in ids.iter() {
-        // First up, download the package
         let vers = format!("={}", id.version());
         let dep = try!(Dependency::parse_no_deprecated(id.name(),
                                                        Some(&vers[..]),
@@ -196,6 +211,8 @@ fn real_main(options: Options, config: &Config) -> CliResult<Option<()>> {
           continue
         }
 
+        // TODO(acmcarther): Filter dev_dependencies and build_dependencies out of this list, and
+        // emit a warning.
         let mut dep_strs = resolve.deps(id).into_iter()
           .map(|dep| {
             if override_name_and_ver_to_path.contains_key(&(dep.name().to_owned(), dep.version().to_string())) {
@@ -211,12 +228,14 @@ fn real_main(options: Options, config: &Config) -> CliResult<Option<()>> {
 
 
         // TODO(acmcarther): This will break as of cargo commit 50f1c172
-        let feature_str = resolve.features(id)
+        let mut feature_strs = resolve.features(id)
           .cloned()
           .unwrap_or(HashSet::new())
           .iter()
           .map(|f| format!("        \"{}\",\n", f))
-          .collect::<String>();
+          .collect::<Vec<String>>();
+        feature_strs.sort();
+        let feature_str = feature_strs.into_iter().collect::<String>();
 
         let cargo_crate = format!(NEW_CRATE_REPOSITORY_TEMPLATE!(),
                                   crate_name=id.name(),
@@ -236,19 +255,3 @@ fn real_main(options: Options, config: &Config) -> CliResult<Option<()>> {
 
     Ok(None)
 }
-
-fn isnt_plus(chr: char) -> bool { chr != '+' }
-fn isnt_colon(chr: char) -> bool { chr != ':' }
-fn isnt_comma(chr: char) -> bool { chr != ',' }
-
-named!(parse_override( &str ) -> DependencyOverride,
-   do_parse!(
-     name: map!(take_while_s!(isnt_plus), str::to_owned) >>
-     char!('+') >>
-     version: map!(take_while_s!(isnt_colon), str::to_owned) >>
-     char!(':') >>
-     bazel_path: map!(take_while_s!(isnt_comma), str::to_owned) >>
-     (DependencyOverride { name: name, version: version, bazel_path: bazel_path })
-   )
-);
-named!(parse_overrides( &str ) -> Vec<DependencyOverride>, separated_list!(char!(','), parse_override));
