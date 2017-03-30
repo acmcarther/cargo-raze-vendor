@@ -203,18 +203,20 @@ fn sync(lockfile: &Path,
         let cargo_crate = format!(
 r#"
 new_cargo_crate(
-    name = "crates_io_{crate_name}"
+    name = "crates_io_{sanitized_crate_name}"
     crate_name = "{crate_name}",
     crate_version = "{crate_version}",
     build_file_content = """
 package(default_visibility = ["//visibility:public"])
+
 licenses(["notice"])
+
 load(
     "@io_bazel_rules_rust//rust:rust.bzl",
     "rust_library",
 )
 rust_library(
-    name = "{crate_name}"
+    name = "{sanitized_crate_name}"
     srcs = glob(["lib.rs", "src/**/*.rs"]),
     deps = [
 {comma_separated_cargo_deps}    ],
@@ -226,7 +228,7 @@ rust_library(
 )
 """
 )
-"#, crate_name=id.name().replace("-", "_"), crate_version=id.version(), comma_separated_cargo_deps=dep_str, comma_separated_features=feature_str);
+"#, crate_name=id.name(), sanitized_crate_name=id.name().replace("-", "_"), crate_version=id.version(), comma_separated_cargo_deps=dep_str, comma_separated_features=feature_str);
         crate_decls.push(cargo_crate)
     }
 
