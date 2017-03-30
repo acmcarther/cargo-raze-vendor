@@ -4,21 +4,18 @@ extern crate nom;
 extern crate rustc_serialize;
 
 use std::cmp;
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::{HashMap, HashSet};
 use std::env;
 use std::fs::{self, File};
 use std::str;
-use std::io::{self, Read, Write};
+use std::io::Write;
 use std::path::Path;
-
-use rustc_serialize::hex::ToHex;
 
 use cargo::ops::Packages;
 use cargo::core::{SourceId, Dependency, Workspace};
 use cargo::ops;
 use cargo::CliResult;
 use cargo::util::{human, ChainError, ToUrl, Config, CargoResult};
-use cargo::util::Sha256;
 
 
 #[derive(RustcDecodable)]
@@ -127,15 +124,12 @@ fn sync(lockfile: &Path,
         human("failed to load pkg lockfile")
     })?;
 
-    let hash = cargo::util::hex::short_hash(registry_id);
-    let ident = registry_id.url().host().unwrap().to_string();
-    let part = format!("{}-{}", ident, hash);
-
-    let src = config.registry_source_path().join(&part);
-    let ids = resolve.iter()
+    let mut ids = resolve.iter()
                      .filter(|id| id.source_id() == registry_id)
                      .cloned()
                      .collect::<Vec<_>>();
+    ids.sort_by_key(|id| id.name().to_owned());
+
     let mut max = HashMap::new();
     for id in ids.iter() {
         let max = max.entry(id.name()).or_insert(id.version());
@@ -182,7 +176,7 @@ fn sync(lockfile: &Path,
           continue
         }
 
-        let dep_str = resolve.deps(id).into_iter()
+        let mut dep_strs = resolve.deps(id).into_iter()
           .map(|dep| {
             if override_name_and_ver_to_path.contains_key(&(dep.name().to_owned(), dep.version().to_string())) {
               format!("        \"{}\",\n", override_name_and_ver_to_path.get(&(dep.name().to_owned(), dep.version().to_string())).unwrap())
@@ -190,7 +184,11 @@ fn sync(lockfile: &Path,
               format!("        \"@io_crates_{sanitized_name}//{sanitized_name}-{version}:{sanitized_name}\",\n", version=dep.version(), sanitized_name=dep.name().replace("-", "_"))
             }
           })
-          .collect::<String>();
+          .collect::<Vec<String>>();
+
+        dep_strs.sort();
+        let dep_str = dep_strs.into_iter().collect::<String>();
+
 
         // TODO(acmcarther): This will break as of cargo commit 50f1c172
         let feature_str = resolve.features(id)
@@ -221,7 +219,7 @@ rust_library(
     deps = [
 {comma_separated_cargo_deps}    ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
 {comma_separated_features}    ],
@@ -236,41 +234,12 @@ rust_library(
     let workspace_str = format!(
 r#"load(
     "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_repositories"
+    "new_crate_repository",
 )
-rust_repositories()
 {}
 "#, crate_decl_str);
     try!(try!(File::create(local_dst.join("WORKSPACE"))).write_all(workspace_str.as_bytes()));
 
-    Ok(())
-}
-
-fn cp_r(src: &Path,
-        dst: &Path,
-        root: &Path,
-        cksums: &mut BTreeMap<String, String>) -> io::Result<()> {
-    try!(fs::create_dir(dst));
-    for entry in try!(src.read_dir()) {
-        let entry = try!(entry);
-
-        // Skip .gitattributes as they're not relevant to builds most of the
-        // time and if we respect them (e.g. in git) then it'll probably mess
-        // with the checksums.
-        if entry.file_name().to_str() == Some(".gitattributes") {
-            continue
-        }
-
-        let src = entry.path();
-        let dst = dst.join(entry.file_name());
-        if try!(entry.file_type()).is_dir() {
-            try!(cp_r(&src, &dst, root, cksums));
-        } else {
-            try!(fs::copy(&src, &dst));
-            let rel = dst.strip_prefix(root).unwrap().to_str().unwrap();
-            cksums.insert(rel.replace("\\", "/"), try!(sha256(&dst)));
-        }
-    }
     Ok(())
 }
 
@@ -295,17 +264,3 @@ named!(parse_override( &str ) -> DependencyOverride,
    )
 );
 named!(parse_overrides( &str ) -> Vec<DependencyOverride>, separated_list!(char!(','), parse_override));
-
-fn sha256(p: &Path) -> io::Result<String> {
-    let mut file = try!(File::open(p));
-    let mut sha = Sha256::new();
-    let mut buf = [0; 2048];
-    loop {
-        let n = try!(file.read(&mut buf));
-        if n == 0 {
-            break
-        }
-        sha.update(&buf[..n]);
-    }
-    Ok(sha.finish().to_hex())
-}
