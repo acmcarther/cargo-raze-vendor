@@ -11,6 +11,7 @@ rust_binary(
     srcs = glob(["src/**/.*.rs"]),
     crate_root = "src/main.rs",
     deps = [
-        "@io_crates_tar//:tar"
+        "@io_crates_tar//:tar",
+        "@io_crates_nom//:nom",
     ]
 )
