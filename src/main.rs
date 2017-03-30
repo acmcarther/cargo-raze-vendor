@@ -79,10 +79,17 @@ rust_library(
 )
 """,
 )
+alias(
+    name = "{sanitized_crate_name}",
+    actual = "@io_crates_{sanitized_crate_name}//:{sanitized_crate_name}",
+)
 "#)}
 
 
-macro_rules! ROOT_WORKSPACE_TEMPLATE {() => (r#"git_repository(
+macro_rules! ROOT_WORKSPACE_TEMPLATE {() => (r#"#THIS IS A GENERATED FILE
+# DO NOT MODIFY
+# INSTEAD, RERUN cargo raze WITH YOUR PREFERRED RULE OVERRIDES
+git_repository(
     name = "io_bazel_rules_rust",
     remote = "https://github.com/acmcarther/rules_rust.git",
     commit = "49a7345",
