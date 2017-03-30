@@ -47,11 +47,56 @@ rust_library(
 )
 "#)}
 
-macro_rules! ROOT_WORKSPACE_TEMPLATE {() => (r#"load(
+macro_rules! NEW_HTTP_ARCHIVE_TEMPLATE {() => (r#"
+new_http_archive(
+    name = "io_crates_{sanitized_crate_name}",
+    urls = [
+      # Bazel's downloader renders HTTP page instead of downloading for some reason.
+      #"https://crates.io/api/v1/crates/{crate_name}/{crate_version}/download"
+      "https://crates-io.s3-us-west-1.amazonaws.com/crates/{crate_name}/{crate_name}-{crate_version}.crate",
+    ],
+    type = "tar.gz",
+    strip_prefix = "{crate_name}-{crate_version}",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
     "@io_bazel_rules_rust//rust:rust.bzl",
-    "new_crate_repository",
+    "rust_library",
 )
+rust_library(
+    name = "{sanitized_crate_name}",
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+{comma_separated_cargo_deps}    ],
+    rustc_flags = [
+        "--cap-lints warn",
+    ],
+    crate_features = [
+{comma_separated_features}    ],
+)
+""",
+)
+"#)}
+
+
+macro_rules! ROOT_WORKSPACE_TEMPLATE {() => (r#"git_repository(
+    name = "io_bazel_rules_rust",
+    remote = "https://github.com/acmcarther/rules_rust.git",
+    commit = "49a7345",
+)
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_repositories",
+)
+rust_repositories()
 {}"#)}
+
+macro_rules! ROOT_HTTP_WORKSPACE_TEMPLATE {() => (r#"{}"#)}
+
 
 /** Define parser for --overrides flag */
 fn isnt_plus(chr: char) -> bool { chr != '+' }
@@ -116,10 +161,9 @@ fn real_main(options: Options, config: &Config) -> CliResult<Option<()>> {
     let default = "vendor".to_string();
     let local_dst = Path::new(options.arg_path.as_ref().unwrap_or(&default));
 
-    let default_overrides = "".to_string();
     // TODO(acmcarther): Fix unwrap. I'm unwrapping here temporarily because Nom's err is hard to
     // convert to CargoError
-    let overrides = parse_overrides(&options.flag_overrides.as_ref().unwrap_or(&default_overrides)).to_result().unwrap();
+    let overrides = options.flag_overrides.as_ref().map(|f| parse_overrides(f).to_result().unwrap()).unwrap_or(Vec::new());
     try!(fs::create_dir_all(&local_dst).chain_error(|| {
         human(format!("failed to create: `{}`", local_dst.display()))
     }));
@@ -218,7 +262,7 @@ fn real_main(options: Options, config: &Config) -> CliResult<Option<()>> {
             if override_name_and_ver_to_path.contains_key(&(dep.name().to_owned(), dep.version().to_string())) {
               format!("        \"{}\",\n", override_name_and_ver_to_path.get(&(dep.name().to_owned(), dep.version().to_string())).unwrap())
             } else {
-              format!("        \"@io_crates_{sanitized_name}//{sanitized_name}-{version}:{sanitized_name}\",\n", version=dep.version(), sanitized_name=dep.name().replace("-", "_"))
+              format!("        \"@io_crates_{sanitized_name}//:{sanitized_name}\",\n", sanitized_name=dep.name().replace("-", "_"))
             }
           })
           .collect::<Vec<String>>();
@@ -237,7 +281,7 @@ fn real_main(options: Options, config: &Config) -> CliResult<Option<()>> {
         feature_strs.sort();
         let feature_str = feature_strs.into_iter().collect::<String>();
 
-        let cargo_crate = format!(NEW_CRATE_REPOSITORY_TEMPLATE!(),
+        let cargo_crate = format!(NEW_HTTP_ARCHIVE_TEMPLATE!(),
                                   crate_name=id.name(),
                                   sanitized_crate_name=id.name().replace("-", "_"),
                                   crate_version=id.version(),
