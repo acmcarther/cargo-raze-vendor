@@ -202,7 +202,7 @@ fn sync(lockfile: &Path,
 
         let cargo_crate = format!(
 r#"
-new_cargo_crate(
+new_crate_repository(
     name = "crates_io_{sanitized_crate_name}"
     crate_name = "{crate_name}",
     crate_version = "{crate_version}",
