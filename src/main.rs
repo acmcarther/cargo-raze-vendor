@@ -15,7 +15,43 @@ use cargo::ops::Packages;
 use cargo::core::{SourceId, Dependency, Workspace};
 use cargo::ops;
 use cargo::CliResult;
-use cargo::util::{human, ChainError, ToUrl, Config, CargoResult};
+use cargo::util::{human, CliError, ChainError, ToUrl, Config};
+
+// Sidestep format!'s "string literals only" stipulation
+macro_rules! NEW_CRATE_REPOSITORY_TEMPLATE {() => (r#"
+new_crate_repository(
+    name = "io_crates_{sanitized_crate_name}"
+    crate_name = "{crate_name}",
+    crate_version = "{crate_version}",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "{sanitized_crate_name}"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+{comma_separated_cargo_deps}    ],
+    rustc_flags = [
+        "--cap-lints warn",
+    ],
+    crate_features = [
+{comma_separated_features}    ],
+)
+"""
+)
+"#)}
+
+macro_rules! ROOT_WORKSPACE_TEMPLATE {() => (r#"load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "new_crate_repository",
+)
+{}"#)}
 
 
 #[derive(RustcDecodable)]
@@ -62,16 +98,16 @@ fn real_main(options: Options, config: &Config) -> CliResult<Option<()>> {
                           /* locked = */ false));
 
     let default = "vendor".to_string();
-    let path = Path::new(options.arg_path.as_ref().unwrap_or(&default));
+    let local_dst = Path::new(options.arg_path.as_ref().unwrap_or(&default));
 
     let default_overrides = "".to_string();
     // TODO(acmcarther): fix below NO GOOD VERY BAD NO NO TIMES
     // Context: nom::ErrorKind isn't error_chain-able, so i'm unwrapping and walking away.
-    let dependency_overrides = parse_overrides(&options.flag_overrides.as_ref().unwrap_or(&default_overrides)).to_result().unwrap();
-    try!(fs::create_dir_all(&path).chain_error(|| {
-        human(format!("failed to create: `{}`", path.display()))
+    let overrides = parse_overrides(&options.flag_overrides.as_ref().unwrap_or(&default_overrides)).to_result().unwrap();
+    try!(fs::create_dir_all(&local_dst).chain_error(|| {
+        human(format!("failed to create: `{}`", local_dst.display()))
     }));
-    let id = try!(options.flag_host.map(|s| {
+    let registry_id = try!(options.flag_host.map(|s| {
         s.to_url().map(|url| SourceId::for_registry(&url)).map_err(human)
     }).unwrap_or_else(|| {
         SourceId::crates_io(config)
@@ -88,18 +124,7 @@ fn real_main(options: Options, config: &Config) -> CliResult<Option<()>> {
         }
     };
 
-    try!(sync(Path::new(lockfile), &path, &id, config, dependency_overrides).chain_error(|| {
-        human("failed to sync")
-    }));
-
-    Ok(None)
-}
-
-fn sync(lockfile: &Path,
-        local_dst: &Path,
-        registry_id: &SourceId,
-        config: &Config,
-        overrides: Vec<DependencyOverride>) -> CargoResult<()> {
+    let lockfile = Path::new(lockfile);
     let mut registry = registry_id.load(config);
     let manifest = lockfile.parent().unwrap().join("Cargo.toml");
     let manifest = env::current_dir().unwrap().join(&manifest);
@@ -111,8 +136,6 @@ fn sync(lockfile: &Path,
     let override_name_and_ver_to_path: HashMap<(String, String), String> = overrides.into_iter()
       .map(|entry| ((entry.name, entry.version), entry.bazel_path))
       .collect();
-    println!("overrides? {:?}", override_name_and_ver_to_path);
-
 
     let (_, resolve) = ops::resolve_ws_precisely(
             &ws,
@@ -125,7 +148,7 @@ fn sync(lockfile: &Path,
     })?;
 
     let mut ids = resolve.iter()
-                     .filter(|id| id.source_id() == registry_id)
+                     .filter(|id| *id.source_id() == registry_id)
                      .cloned()
                      .collect::<Vec<_>>();
     ids.sort_by_key(|id| id.name().to_owned());
@@ -162,16 +185,13 @@ fn sync(lockfile: &Path,
             });
         }
         if vec.len() == 0 {
-            return Err(human(format!("could not find package: {}", id)))
+            return Err(CliError::new(human(format!("could not find package: {}", id)), 101))
         }
         if vec.len() > 1 {
-            return Err(human(format!("found too many packages: {}", id)))
+            return Err(CliError::new(human(format!("found too many packages: {}", id)), 101))
         }
-        /*
-        try!(registry.download(id).chain_error(|| {
-            human(format!("failed to download package from registry"))
-        }));*/
 
+        // Skip generating new_crate_repository for overrides
         if override_name_and_ver_to_path.contains_key(&(id.name().to_owned(), id.version().to_string())) {
           continue
         }
@@ -198,60 +218,28 @@ fn sync(lockfile: &Path,
           .map(|f| format!("        \"{}\",\n", f))
           .collect::<String>();
 
-        let cargo_crate = format!(
-r#"
-new_crate_repository(
-    name = "io_crates_{sanitized_crate_name}"
-    crate_name = "{crate_name}",
-    crate_version = "{crate_version}",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "{sanitized_crate_name}"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-{comma_separated_cargo_deps}    ],
-    rustc_flags = [
-        "--cap-lints warn",
-    ],
-    crate_features = [
-{comma_separated_features}    ],
-)
-"""
-)
-"#, crate_name=id.name(), sanitized_crate_name=id.name().replace("-", "_"), crate_version=id.version(), comma_separated_cargo_deps=dep_str, comma_separated_features=feature_str);
+        let cargo_crate = format!(NEW_CRATE_REPOSITORY_TEMPLATE!(),
+                                  crate_name=id.name(),
+                                  sanitized_crate_name=id.name().replace("-", "_"),
+                                  crate_version=id.version(),
+                                  comma_separated_cargo_deps=dep_str,
+                                  comma_separated_features=feature_str);
         crate_decls.push(cargo_crate)
     }
 
     let crate_decl_str = crate_decls.into_iter().collect::<String>();
-    let workspace_str = format!(
-r#"load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "new_crate_repository",
-)
-{}
-"#, crate_decl_str);
-    try!(try!(File::create(local_dst.join("WORKSPACE"))).write_all(workspace_str.as_bytes()));
+    let workspace_str = format!(ROOT_WORKSPACE_TEMPLATE!(), crate_decl_str);
+    let workspace_path = local_dst.join("WORKSPACE");
+    try!(File::create(&workspace_path).and_then(|mut f| f.write_all(workspace_str.as_bytes())).chain_error(|| {
+        human(format!("failed to create: `{}`", workspace_path.display()))
+    }));
 
-    Ok(())
+    Ok(None)
 }
 
-fn isnt_plus(chr: char) -> bool {
-  chr != '+'
-}
-fn isnt_colon(chr: char) -> bool {
-  chr != ':'
-}
-fn isnt_comma(chr: char) -> bool {
-  chr != ','
-}
+fn isnt_plus(chr: char) -> bool { chr != '+' }
+fn isnt_colon(chr: char) -> bool { chr != ':' }
+fn isnt_comma(chr: char) -> bool { chr != ',' }
 
 named!(parse_override( &str ) -> DependencyOverride,
    do_parse!(

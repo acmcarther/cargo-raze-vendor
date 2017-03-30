@@ -24,7 +24,7 @@ rust_library(
         "@io_crates_winapi_build//winapi_build-0.1.1:winapi_build",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -52,7 +52,7 @@ rust_library(
         "@io_crates_memchr//memchr-0.1.11:memchr",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -79,7 +79,7 @@ rust_library(
     deps = [
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -106,7 +106,7 @@ rust_library(
     deps = [
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -134,7 +134,7 @@ rust_library(
         "@io_crates_gcc//gcc-0.3.43:gcc",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -161,7 +161,7 @@ rust_library(
     deps = [
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -193,7 +193,7 @@ rust_library(
         "@io_crates_winapi//winapi-0.2.8:winapi",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -226,7 +226,7 @@ rust_library(
         "@io_crates_winapi//winapi-0.2.8:winapi",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -257,7 +257,7 @@ rust_library(
         "@io_crates_strsim//strsim-0.5.2:strsim",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -286,11 +286,11 @@ rust_library(
         "@io_crates_regex//regex-0.1.80:regex",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
-        "default",
         "regex",
+        "default",
     ],
 )
 """
@@ -316,7 +316,7 @@ rust_library(
         "@io_crates_libc//libc-0.2.21:libc",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -345,7 +345,7 @@ rust_library(
         "@io_crates_miniz_sys//miniz_sys-0.1.9:miniz_sys",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
         "default",
@@ -374,7 +374,7 @@ rust_library(
     deps = [
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -404,7 +404,7 @@ rust_library(
         "@io_crates_winapi//winapi-0.2.8:winapi",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -431,7 +431,7 @@ rust_library(
     deps = [
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -460,7 +460,7 @@ rust_library(
         "@io_crates_winapi_build//winapi_build-0.1.1:winapi_build",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -493,16 +493,16 @@ rust_library(
         "@io_crates_url//url-1.4.0:url",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
-        "https",
         "libgit2-sys",
-        "openssl-probe",
         "ssh",
-        "openssl-sys",
         "curl",
+        "openssl-probe",
+        "https",
         "default",
+        "openssl-sys",
     ],
 )
 """
@@ -531,7 +531,7 @@ rust_library(
         "@io_crates_url//url-1.4.0:url",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -558,7 +558,7 @@ rust_library(
     deps = [
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -588,7 +588,7 @@ rust_library(
         "@io_crates_unicode_normalization//unicode_normalization-0.1.4:unicode_normalization",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -617,7 +617,7 @@ rust_library(
         "@io_crates_winapi_build//winapi_build-0.1.1:winapi_build",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -644,7 +644,7 @@ rust_library(
     deps = [
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -671,11 +671,11 @@ rust_library(
     deps = [
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
-        "use_std",
         "default",
+        "use_std",
     ],
 )
 """
@@ -708,15 +708,15 @@ rust_library(
         "@io_crates_pkg_config//pkg_config-0.3.9:pkg_config",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
-        "ssh",
-        "https",
-        "curl-sys",
-        "curl",
-        "libssh2-sys",
         "openssl-sys",
+        "ssh",
+        "curl-sys",
+        "libssh2-sys",
+        "curl",
+        "https",
     ],
 )
 """
@@ -746,7 +746,7 @@ rust_library(
         "@io_crates_pkg_config//pkg_config-0.3.9:pkg_config",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -776,7 +776,7 @@ rust_library(
         "@io_crates_pkg_config//pkg_config-0.3.9:pkg_config",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -803,7 +803,7 @@ rust_library(
     deps = [
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -831,7 +831,7 @@ rust_library(
         "@io_crates_libc//libc-0.2.21:libc",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -860,7 +860,7 @@ rust_library(
         "@io_crates_libc//libc-0.2.21:libc",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -891,7 +891,7 @@ rust_library(
         "@io_crates_ws2_32_sys//ws2_32_sys-0.2.1:ws2_32_sys",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -923,7 +923,7 @@ rust_library(
         "@io_crates_ws2_32_sys//ws2_32_sys-0.2.1:ws2_32_sys",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -950,7 +950,7 @@ rust_library(
     deps = [
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
         "stream",
@@ -980,7 +980,7 @@ rust_library(
         "@io_crates_libc//libc-0.2.21:libc",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -1012,7 +1012,7 @@ rust_library(
         "@io_crates_openssl_sys//openssl_sys-0.9.7:openssl_sys",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -1039,7 +1039,7 @@ rust_library(
     deps = [
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -1071,7 +1071,7 @@ rust_library(
         "@io_crates_user32_sys//user32_sys-0.2.0:user32_sys",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -1098,7 +1098,7 @@ rust_library(
     deps = [
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -1127,7 +1127,7 @@ rust_library(
         "@io_crates_winapi_build//winapi_build-0.1.1:winapi_build",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -1155,7 +1155,7 @@ rust_library(
         "@io_crates_libc//libc-0.2.21:libc",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -1187,7 +1187,7 @@ rust_library(
         "@io_crates_utf8_ranges//utf8_ranges-0.1.3:utf8_ranges",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -1214,7 +1214,7 @@ rust_library(
     deps = [
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -1241,7 +1241,7 @@ rust_library(
     deps = [
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -1269,7 +1269,7 @@ rust_library(
         "@io_crates_semver_parser//semver_parser-0.6.2:semver_parser",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
         "default",
@@ -1299,7 +1299,7 @@ rust_library(
         "@io_crates_regex//regex-0.1.80:regex",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -1326,7 +1326,7 @@ rust_library(
     deps = [
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -1353,7 +1353,7 @@ rust_library(
     deps = [
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -1382,7 +1382,7 @@ rust_library(
         "@io_crates_libc//libc-0.2.21:libc",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -1410,7 +1410,7 @@ rust_library(
         "@io_crates_rand//rand-0.3.15:rand",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -1439,7 +1439,7 @@ rust_library(
         "@io_crates_winapi//winapi-0.2.8:winapi",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
         "default",
@@ -1469,7 +1469,7 @@ rust_library(
         "@io_crates_libc//libc-0.2.21:libc",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -1497,7 +1497,7 @@ rust_library(
         "@io_crates_thread_id//thread_id-2.0.0:thread_id",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -1525,7 +1525,7 @@ rust_library(
         "@io_crates_rustc_serialize//rustc_serialize-0.3.22:rustc_serialize",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
         "rustc-serialize",
@@ -1555,7 +1555,7 @@ rust_library(
         "@io_crates_matches//matches-0.1.4:matches",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -1582,7 +1582,7 @@ rust_library(
     deps = [
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -1611,7 +1611,7 @@ rust_library(
         "@io_crates_matches//matches-0.1.4:matches",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -1640,7 +1640,7 @@ rust_library(
         "@io_crates_winapi_build//winapi_build-0.1.1:winapi_build",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -1667,7 +1667,7 @@ rust_library(
     deps = [
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -1694,7 +1694,7 @@ rust_library(
     deps = [
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -1721,7 +1721,7 @@ rust_library(
     deps = [
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
@@ -1750,11 +1750,10 @@ rust_library(
         "@io_crates_winapi_build//winapi_build-0.1.1:winapi_build",
     ],
     rustc_flags = [
-        "--cap-lints warn"
+        "--cap-lints warn",
     ],
     crate_features = [
     ],
 )
 """
 )
-
