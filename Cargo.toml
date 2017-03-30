@@ -11,6 +11,7 @@ A Cargo subcommand to help integrate Cargo dependencies into a Bazel project.
 
 [dependencies]
 rustc-serialize = "0.3"
+nom = "2.2.0"
 
 [dependencies.libc]
 version = "0.2.21"

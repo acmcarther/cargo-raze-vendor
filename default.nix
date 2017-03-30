@@ -3,8 +3,8 @@ let
   pkgs = import <nixpkgs> {};
 in pkgs.stdenv.mkDerivation rec {
   name = "raze";
-  buildInputs = [ pkgs.scala ];
-  propagatedBuildInputs = [ pkgs.pkgconfig pkgs.openssl pkgs.zlib ];
+  buildInputs = [ ];
+  propagatedBuildInputs = [ pkgs.libgit2 pkgs.pkgconfig pkgs.openssl pkgs.zlib pkgs.cmake ];
   shellHook = ''
     # Allow my shell to add custom snippet
     export IS_NIX_SHELL=1
