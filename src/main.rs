@@ -187,7 +187,7 @@ fn sync(lockfile: &Path,
             if override_name_and_ver_to_path.contains_key(&(dep.name().to_owned(), dep.version().to_string())) {
               format!("        \"{}\",\n", override_name_and_ver_to_path.get(&(dep.name().to_owned(), dep.version().to_string())).unwrap())
             } else {
-              format!("        \"@io_cargo_{sanitized_name}//{sanitized_name}-{version}:{sanitized_name}\",\n", version=dep.version(), sanitized_name=dep.name().replace("-", "_"))
+              format!("        \"@io_crates_{sanitized_name}//{sanitized_name}-{version}:{sanitized_name}\",\n", version=dep.version(), sanitized_name=dep.name().replace("-", "_"))
             }
           })
           .collect::<String>();
@@ -203,7 +203,7 @@ fn sync(lockfile: &Path,
         let cargo_crate = format!(
 r#"
 new_crate_repository(
-    name = "crates_io_{sanitized_crate_name}"
+    name = "io_crates_{sanitized_crate_name}"
     crate_name = "{crate_name}",
     crate_version = "{crate_version}",
     build_file_content = """
@@ -234,13 +234,9 @@ rust_library(
 
     let crate_decl_str = crate_decls.into_iter().collect::<String>();
     let workspace_str = format!(
-r#"git_repository(
-    name = "io_bazel_rules_rust",
-    remote = "https://github.com/acmcarther/rules_rust.git",
-    commit = "49a7345"
-)
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",    "rust_repositories"
+r#"load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_repositories"
 )
 rust_repositories()
 {}

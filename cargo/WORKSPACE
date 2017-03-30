@@ -1,17 +1,13 @@
-git_repository(
-    name = "io_bazel_rules_rust",
-    remote = "https://github.com/acmcarther/rules_rust.git",
-    commit = "49a7345"
-)
 load(
-    "@io_bazel_rules_rust//rust:rust.bzl",    "rust_repositories"
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_repositories"
 )
 rust_repositories()
 
 new_crate_repository(
-    name = "crates_io_semver"
-    crate_name = "semver",
-    crate_version = "0.5.1",
+    name = "io_crates_thread_local"
+    crate_name = "thread_local",
+    crate_version = "0.2.7",
     build_file_content = """
 package(default_visibility = ["//visibility:public"])
 
@@ -22,70 +18,10 @@ load(
     "rust_library",
 )
 rust_library(
-    name = "semver"
+    name = "thread_local"
     srcs = glob(["lib.rs", "src/**/*.rs"]),
     deps = [
-        "@io_cargo_semver_parser//semver_parser-0.6.2:semver_parser",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-        "default",
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_term"
-    crate_name = "term",
-    crate_version = "0.4.5",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "term"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_winapi//winapi-0.2.8:winapi",
-        "@io_cargo_kernel32_sys//kernel32_sys-0.2.2:kernel32_sys",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-        "default",
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_semver_parser"
-    crate_name = "semver-parser",
-    crate_version = "0.6.2",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "semver_parser"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_lazy_static//lazy_static-0.2.4:lazy_static",
-        "@io_cargo_regex//regex-0.1.80:regex",
+        "@io_crates_thread_id//thread_id-2.0.0:thread_id",
     ],
     rustc_flags = [
         "--cap-lints warn"
@@ -97,269 +33,7 @@ rust_library(
 )
 
 new_crate_repository(
-    name = "crates_io_miniz_sys"
-    crate_name = "miniz-sys",
-    crate_version = "0.1.9",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "miniz_sys"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_gcc//gcc-0.3.43:gcc",
-        "@io_cargo_libc//libc-0.2.21:libc",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_regex"
-    crate_name = "regex",
-    crate_version = "0.1.80",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "regex"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_aho_corasick//aho_corasick-0.5.3:aho_corasick",
-        "@io_cargo_thread_local//thread_local-0.2.7:thread_local",
-        "@io_cargo_memchr//memchr-0.1.11:memchr",
-        "@io_cargo_utf8_ranges//utf8_ranges-0.1.3:utf8_ranges",
-        "@io_cargo_regex_syntax//regex_syntax-0.3.9:regex_syntax",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_cmake"
-    crate_name = "cmake",
-    crate_version = "0.1.21",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "cmake"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_gcc//gcc-0.3.43:gcc",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_nom"
-    crate_name = "nom",
-    crate_version = "2.2.0",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "nom"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-        "default",
-        "stream",
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_toml"
-    crate_name = "toml",
-    crate_version = "0.2.1",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "toml"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_rustc_serialize//rustc_serialize-0.3.22:rustc_serialize",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-        "rustc-serialize",
-        "default",
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_regex_syntax"
-    crate_name = "regex-syntax",
-    crate_version = "0.3.9",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "regex_syntax"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_env_logger"
-    crate_name = "env_logger",
-    crate_version = "0.3.5",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "env_logger"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "//my/special/override",
-        "@io_cargo_regex//regex-0.1.80:regex",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-        "default",
-        "regex",
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_unicode_normalization"
-    crate_name = "unicode-normalization",
-    crate_version = "0.1.4",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "unicode_normalization"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_psapi_sys"
-    crate_name = "psapi-sys",
-    crate_version = "0.1.0",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "psapi_sys"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_winapi_build//winapi_build-0.1.1:winapi_build",
-        "@io_cargo_winapi//winapi-0.2.8:winapi",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_unicode_bidi"
+    name = "io_crates_unicode_bidi"
     crate_name = "unicode-bidi",
     crate_version = "0.2.5",
     build_file_content = """
@@ -375,7 +49,7 @@ rust_library(
     name = "unicode_bidi"
     srcs = glob(["lib.rs", "src/**/*.rs"]),
     deps = [
-        "@io_cargo_matches//matches-0.1.4:matches",
+        "@io_crates_matches//matches-0.1.4:matches",
     ],
     rustc_flags = [
         "--cap-lints warn"
@@ -387,277 +61,7 @@ rust_library(
 )
 
 new_crate_repository(
-    name = "crates_io_libc"
-    crate_name = "libc",
-    crate_version = "0.2.21",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "libc"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-        "default",
-        "use_std",
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_docopt"
-    crate_name = "docopt",
-    crate_version = "0.6.86",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "docopt"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_lazy_static//lazy_static-0.2.4:lazy_static",
-        "@io_cargo_regex//regex-0.1.80:regex",
-        "@io_cargo_rustc_serialize//rustc_serialize-0.3.22:rustc_serialize",
-        "@io_cargo_strsim//strsim-0.5.2:strsim",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_curl_sys"
-    crate_name = "curl-sys",
-    crate_version = "0.3.10",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "curl_sys"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_libc//libc-0.2.21:libc",
-        "@io_cargo_winapi//winapi-0.2.8:winapi",
-        "@io_cargo_openssl_sys//openssl_sys-0.9.7:openssl_sys",
-        "@io_cargo_gcc//gcc-0.3.43:gcc",
-        "@io_cargo_libz_sys//libz_sys-1.0.13:libz_sys",
-        "@io_cargo_pkg_config//pkg_config-0.3.9:pkg_config",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_crossbeam"
-    crate_name = "crossbeam",
-    crate_version = "0.2.10",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "crossbeam"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_aho_corasick"
-    crate_name = "aho-corasick",
-    crate_version = "0.5.3",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "aho_corasick"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_memchr//memchr-0.1.11:memchr",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_fs2"
-    crate_name = "fs2",
-    crate_version = "0.3.0",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "fs2"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_libc//libc-0.2.21:libc",
-        "@io_cargo_winapi//winapi-0.2.8:winapi",
-        "@io_cargo_kernel32_sys//kernel32_sys-0.2.2:kernel32_sys",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_net2"
-    crate_name = "net2",
-    crate_version = "0.2.27",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "net2"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_winapi//winapi-0.2.8:winapi",
-        "@io_cargo_libc//libc-0.2.21:libc",
-        "@io_cargo_kernel32_sys//kernel32_sys-0.2.2:kernel32_sys",
-        "@io_cargo_cfg_if//cfg_if-0.1.0:cfg_if",
-        "@io_cargo_ws2_32_sys//ws2_32_sys-0.2.1:ws2_32_sys",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_memchr"
-    crate_name = "memchr",
-    crate_version = "0.1.11",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "memchr"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_libc//libc-0.2.21:libc",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_openssl"
-    crate_name = "openssl",
-    crate_version = "0.9.7",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "openssl"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_bitflags//bitflags-0.7.0:bitflags",
-        "@io_cargo_libc//libc-0.2.21:libc",
-        "@io_cargo_lazy_static//lazy_static-0.2.4:lazy_static",
-        "@io_cargo_foreign_types//foreign_types-0.2.0:foreign_types",
-        "@io_cargo_openssl_sys//openssl_sys-0.9.7:openssl_sys",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_openssl_probe"
+    name = "io_crates_openssl_probe"
     crate_name = "openssl-probe",
     crate_version = "0.1.0",
     build_file_content = """
@@ -684,848 +88,7 @@ rust_library(
 )
 
 new_crate_repository(
-    name = "crates_io_tempdir"
-    crate_name = "tempdir",
-    crate_version = "0.3.5",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "tempdir"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_rand//rand-0.3.15:rand",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_flate2"
-    crate_name = "flate2",
-    crate_version = "0.2.17",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "flate2"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_miniz_sys//miniz_sys-0.1.9:miniz_sys",
-        "@io_cargo_libc//libc-0.2.21:libc",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-        "miniz-sys",
-        "default",
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_filetime"
-    crate_name = "filetime",
-    crate_version = "0.1.10",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "filetime"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_libc//libc-0.2.21:libc",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_strsim"
-    crate_name = "strsim",
-    crate_version = "0.5.2",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "strsim"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_gdi32_sys"
-    crate_name = "gdi32-sys",
-    crate_version = "0.2.0",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "gdi32_sys"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_winapi//winapi-0.2.8:winapi",
-        "@io_cargo_winapi_build//winapi_build-0.1.1:winapi_build",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_rand"
-    crate_name = "rand",
-    crate_version = "0.3.15",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "rand"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_libc//libc-0.2.21:libc",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_idna"
-    crate_name = "idna",
-    crate_version = "0.1.0",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "idna"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_matches//matches-0.1.4:matches",
-        "@io_cargo_unicode_bidi//unicode_bidi-0.2.5:unicode_bidi",
-        "@io_cargo_unicode_normalization//unicode_normalization-0.1.4:unicode_normalization",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_winapi"
-    crate_name = "winapi",
-    crate_version = "0.2.8",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "winapi"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_glob"
-    crate_name = "glob",
-    crate_version = "0.2.11",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "glob"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_lazy_static"
-    crate_name = "lazy_static",
-    crate_version = "0.2.4",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "lazy_static"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_gcc"
-    crate_name = "gcc",
-    crate_version = "0.3.43",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "gcc"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_libssh2_sys"
-    crate_name = "libssh2-sys",
-    crate_version = "0.2.5",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "libssh2_sys"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_libc//libc-0.2.21:libc",
-        "@io_cargo_pkg_config//pkg_config-0.3.9:pkg_config",
-        "@io_cargo_libz_sys//libz_sys-1.0.13:libz_sys",
-        "@io_cargo_openssl_sys//openssl_sys-0.9.7:openssl_sys",
-        "@io_cargo_cmake//cmake-0.1.21:cmake",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_utf8_ranges"
-    crate_name = "utf8-ranges",
-    crate_version = "0.1.3",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "utf8_ranges"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_thread_id"
-    crate_name = "thread-id",
-    crate_version = "2.0.0",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "thread_id"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_libc//libc-0.2.21:libc",
-        "@io_cargo_kernel32_sys//kernel32_sys-0.2.2:kernel32_sys",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_user32_sys"
-    crate_name = "user32-sys",
-    crate_version = "0.2.0",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "user32_sys"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_winapi//winapi-0.2.8:winapi",
-        "@io_cargo_winapi_build//winapi_build-0.1.1:winapi_build",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_ws2_32_sys"
-    crate_name = "ws2_32-sys",
-    crate_version = "0.2.1",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "ws2_32_sys"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_winapi//winapi-0.2.8:winapi",
-        "@io_cargo_winapi_build//winapi_build-0.1.1:winapi_build",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_winapi_build"
-    crate_name = "winapi-build",
-    crate_version = "0.1.1",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "winapi_build"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_matches"
-    crate_name = "matches",
-    crate_version = "0.1.4",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "matches"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_foreign_types"
-    crate_name = "foreign-types",
-    crate_version = "0.2.0",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "foreign_types"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_openssl_sys"
-    crate_name = "openssl-sys",
-    crate_version = "0.9.7",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "openssl_sys"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_libc//libc-0.2.21:libc",
-        "@io_cargo_gdi32_sys//gdi32_sys-0.2.0:gdi32_sys",
-        "@io_cargo_pkg_config//pkg_config-0.3.9:pkg_config",
-        "@io_cargo_gcc//gcc-0.3.43:gcc",
-        "@io_cargo_user32_sys//user32_sys-0.2.0:user32_sys",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_shell_escape"
-    crate_name = "shell-escape",
-    crate_version = "0.1.3",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "shell_escape"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_curl"
-    crate_name = "curl",
-    crate_version = "0.4.6",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "curl"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_winapi//winapi-0.2.8:winapi",
-        "@io_cargo_openssl_probe//openssl_probe-0.1.0:openssl_probe",
-        "@io_cargo_openssl_sys//openssl_sys-0.9.7:openssl_sys",
-        "@io_cargo_curl_sys//curl_sys-0.3.10:curl_sys",
-        "@io_cargo_libc//libc-0.2.21:libc",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_git2"
-    crate_name = "git2",
-    crate_version = "0.6.4",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "git2"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_libc//libc-0.2.21:libc",
-        "@io_cargo_openssl_probe//openssl_probe-0.1.0:openssl_probe",
-        "@io_cargo_openssl_sys//openssl_sys-0.9.7:openssl_sys",
-        "@io_cargo_url//url-1.4.0:url",
-        "@io_cargo_libgit2_sys//libgit2_sys-0.6.7:libgit2_sys",
-        "@io_cargo_bitflags//bitflags-0.7.0:bitflags",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-        "default",
-        "https",
-        "openssl-sys",
-        "openssl-probe",
-        "ssh",
-        "curl",
-        "libgit2-sys",
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_url"
-    crate_name = "url",
-    crate_version = "1.4.0",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "url"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_idna//idna-0.1.0:idna",
-        "@io_cargo_matches//matches-0.1.4:matches",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_cfg_if"
-    crate_name = "cfg-if",
-    crate_version = "0.1.0",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "cfg_if"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_miow"
-    crate_name = "miow",
-    crate_version = "0.1.5",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "miow"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_net2//net2-0.2.27:net2",
-        "@io_cargo_winapi//winapi-0.2.8:winapi",
-        "@io_cargo_ws2_32_sys//ws2_32_sys-0.2.1:ws2_32_sys",
-        "@io_cargo_kernel32_sys//kernel32_sys-0.2.2:kernel32_sys",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_kernel32_sys"
-    crate_name = "kernel32-sys",
-    crate_version = "0.2.2",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "kernel32_sys"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_winapi_build//winapi_build-0.1.1:winapi_build",
-        "@io_cargo_winapi//winapi-0.2.8:winapi",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_thread_local"
-    crate_name = "thread_local",
-    crate_version = "0.2.7",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "thread_local"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_thread_id//thread_id-2.0.0:thread_id",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_libz_sys"
-    crate_name = "libz-sys",
-    crate_version = "1.0.13",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "libz_sys"
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-        "@io_cargo_pkg_config//pkg_config-0.3.9:pkg_config",
-        "@io_cargo_gcc//gcc-0.3.43:gcc",
-        "@io_cargo_libc//libc-0.2.21:libc",
-    ],
-    rustc_flags = [
-        "--cap-lints warn"
-    ],
-    crate_features = [
-    ],
-)
-"""
-)
-
-new_crate_repository(
-    name = "crates_io_rustc_serialize"
+    name = "io_crates_rustc_serialize"
     crate_name = "rustc-serialize",
     crate_version = "0.3.22",
     build_file_content = """
@@ -1552,7 +115,375 @@ rust_library(
 )
 
 new_crate_repository(
-    name = "crates_io_pkg_config"
+    name = "io_crates_openssl"
+    crate_name = "openssl",
+    crate_version = "0.9.7",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "openssl"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_lazy_static//lazy_static-0.2.4:lazy_static",
+        "@io_crates_bitflags//bitflags-0.7.0:bitflags",
+        "@io_crates_foreign_types//foreign_types-0.2.0:foreign_types",
+        "@io_crates_libc//libc-0.2.21:libc",
+        "@io_crates_openssl_sys//openssl_sys-0.9.7:openssl_sys",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_curl_sys"
+    crate_name = "curl-sys",
+    crate_version = "0.3.10",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "curl_sys"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_libc//libc-0.2.21:libc",
+        "@io_crates_openssl_sys//openssl_sys-0.9.7:openssl_sys",
+        "@io_crates_libz_sys//libz_sys-1.0.13:libz_sys",
+        "@io_crates_pkg_config//pkg_config-0.3.9:pkg_config",
+        "@io_crates_gcc//gcc-0.3.43:gcc",
+        "@io_crates_winapi//winapi-0.2.8:winapi",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_git2_curl"
+    crate_name = "git2-curl",
+    crate_version = "0.7.0",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "git2_curl"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_git2//git2-0.6.4:git2",
+        "@io_crates_curl//curl-0.4.6:curl",
+        "@io_crates_url//url-1.4.0:url",
+        "//my/special/override",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_matches"
+    crate_name = "matches",
+    crate_version = "0.1.4",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "matches"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_semver"
+    crate_name = "semver",
+    crate_version = "0.5.1",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "semver"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_semver_parser//semver_parser-0.6.2:semver_parser",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+        "default",
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_openssl_sys"
+    crate_name = "openssl-sys",
+    crate_version = "0.9.7",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "openssl_sys"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_libc//libc-0.2.21:libc",
+        "@io_crates_gcc//gcc-0.3.43:gcc",
+        "@io_crates_pkg_config//pkg_config-0.3.9:pkg_config",
+        "@io_crates_gdi32_sys//gdi32_sys-0.2.0:gdi32_sys",
+        "@io_crates_user32_sys//user32_sys-0.2.0:user32_sys",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_libgit2_sys"
+    crate_name = "libgit2-sys",
+    crate_version = "0.6.7",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "libgit2_sys"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_libc//libc-0.2.21:libc",
+        "@io_crates_libssh2_sys//libssh2_sys-0.2.5:libssh2_sys",
+        "@io_crates_openssl_sys//openssl_sys-0.9.7:openssl_sys",
+        "@io_crates_gcc//gcc-0.3.43:gcc",
+        "@io_crates_libz_sys//libz_sys-1.0.13:libz_sys",
+        "@io_crates_cmake//cmake-0.1.21:cmake",
+        "@io_crates_curl_sys//curl_sys-0.3.10:curl_sys",
+        "@io_crates_pkg_config//pkg_config-0.3.9:pkg_config",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+        "libssh2-sys",
+        "https",
+        "curl-sys",
+        "openssl-sys",
+        "ssh",
+        "curl",
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_ws2_32_sys"
+    crate_name = "ws2_32-sys",
+    crate_version = "0.2.1",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "ws2_32_sys"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_winapi//winapi-0.2.8:winapi",
+        "@io_crates_winapi_build//winapi_build-0.1.1:winapi_build",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_advapi32_sys"
+    crate_name = "advapi32-sys",
+    crate_version = "0.2.0",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "advapi32_sys"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_winapi_build//winapi_build-0.1.1:winapi_build",
+        "@io_crates_winapi//winapi-0.2.8:winapi",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_user32_sys"
+    crate_name = "user32-sys",
+    crate_version = "0.2.0",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "user32_sys"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_winapi//winapi-0.2.8:winapi",
+        "@io_crates_winapi_build//winapi_build-0.1.1:winapi_build",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_utf8_ranges"
+    crate_name = "utf8-ranges",
+    crate_version = "0.1.3",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "utf8_ranges"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_libc"
+    crate_name = "libc",
+    crate_version = "0.2.21",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "libc"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+        "use_std",
+        "default",
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_pkg_config"
     crate_name = "pkg-config",
     crate_version = "0.3.9",
     build_file_content = """
@@ -1579,9 +510,9 @@ rust_library(
 )
 
 new_crate_repository(
-    name = "crates_io_git2_curl"
-    crate_name = "git2-curl",
-    crate_version = "0.7.0",
+    name = "io_crates_lazy_static"
+    crate_name = "lazy_static",
+    crate_version = "0.2.4",
     build_file_content = """
 package(default_visibility = ["//visibility:public"])
 
@@ -1592,13 +523,9 @@ load(
     "rust_library",
 )
 rust_library(
-    name = "git2_curl"
+    name = "lazy_static"
     srcs = glob(["lib.rs", "src/**/*.rs"]),
     deps = [
-        "@io_cargo_git2//git2-0.6.4:git2",
-        "//my/special/override",
-        "@io_cargo_curl//curl-0.4.6:curl",
-        "@io_cargo_url//url-1.4.0:url",
     ],
     rustc_flags = [
         "--cap-lints warn"
@@ -1610,9 +537,9 @@ rust_library(
 )
 
 new_crate_repository(
-    name = "crates_io_libgit2_sys"
-    crate_name = "libgit2-sys",
-    crate_version = "0.6.7",
+    name = "io_crates_filetime"
+    crate_name = "filetime",
+    crate_version = "0.1.10",
     build_file_content = """
 package(default_visibility = ["//visibility:public"])
 
@@ -1623,35 +550,220 @@ load(
     "rust_library",
 )
 rust_library(
-    name = "libgit2_sys"
+    name = "filetime"
     srcs = glob(["lib.rs", "src/**/*.rs"]),
     deps = [
-        "@io_cargo_libc//libc-0.2.21:libc",
-        "@io_cargo_cmake//cmake-0.1.21:cmake",
-        "@io_cargo_gcc//gcc-0.3.43:gcc",
-        "@io_cargo_libssh2_sys//libssh2_sys-0.2.5:libssh2_sys",
-        "@io_cargo_openssl_sys//openssl_sys-0.9.7:openssl_sys",
-        "@io_cargo_curl_sys//curl_sys-0.3.10:curl_sys",
-        "@io_cargo_libz_sys//libz_sys-1.0.13:libz_sys",
-        "@io_cargo_pkg_config//pkg_config-0.3.9:pkg_config",
+        "@io_crates_libc//libc-0.2.21:libc",
     ],
     rustc_flags = [
         "--cap-lints warn"
     ],
     crate_features = [
-        "curl-sys",
-        "ssh",
-        "openssl-sys",
-        "https",
-        "curl",
-        "libssh2-sys",
     ],
 )
 """
 )
 
 new_crate_repository(
-    name = "crates_io_bitflags"
+    name = "io_crates_miniz_sys"
+    crate_name = "miniz-sys",
+    crate_version = "0.1.9",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "miniz_sys"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_libc//libc-0.2.21:libc",
+        "@io_crates_gcc//gcc-0.3.43:gcc",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_cmake"
+    crate_name = "cmake",
+    crate_version = "0.1.21",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "cmake"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_gcc//gcc-0.3.43:gcc",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_cfg_if"
+    crate_name = "cfg-if",
+    crate_version = "0.1.0",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "cfg_if"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_semver_parser"
+    crate_name = "semver-parser",
+    crate_version = "0.6.2",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "semver_parser"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_regex//regex-0.1.80:regex",
+        "@io_crates_lazy_static//lazy_static-0.2.4:lazy_static",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_winapi"
+    crate_name = "winapi",
+    crate_version = "0.2.8",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "winapi"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_rand"
+    crate_name = "rand",
+    crate_version = "0.3.15",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "rand"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_libc//libc-0.2.21:libc",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_toml"
+    crate_name = "toml",
+    crate_version = "0.2.1",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "toml"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_rustc_serialize//rustc_serialize-0.3.22:rustc_serialize",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+        "rustc-serialize",
+        "default",
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_bitflags"
     crate_name = "bitflags",
     crate_version = "0.7.0",
     build_file_content = """
@@ -1678,9 +790,9 @@ rust_library(
 )
 
 new_crate_repository(
-    name = "crates_io_advapi32_sys"
-    crate_name = "advapi32-sys",
-    crate_version = "0.2.0",
+    name = "io_crates_aho_corasick"
+    crate_name = "aho-corasick",
+    crate_version = "0.5.3",
     build_file_content = """
 package(default_visibility = ["//visibility:public"])
 
@@ -1691,11 +803,10 @@ load(
     "rust_library",
 )
 rust_library(
-    name = "advapi32_sys"
+    name = "aho_corasick"
     srcs = glob(["lib.rs", "src/**/*.rs"]),
     deps = [
-        "@io_cargo_winapi//winapi-0.2.8:winapi",
-        "@io_cargo_winapi_build//winapi_build-0.1.1:winapi_build",
+        "@io_crates_memchr//memchr-0.1.11:memchr",
     ],
     rustc_flags = [
         "--cap-lints warn"
@@ -1707,7 +818,7 @@ rust_library(
 )
 
 new_crate_repository(
-    name = "crates_io_num_cpus"
+    name = "io_crates_num_cpus"
     crate_name = "num_cpus",
     crate_version = "1.3.0",
     build_file_content = """
@@ -1723,7 +834,7 @@ rust_library(
     name = "num_cpus"
     srcs = glob(["lib.rs", "src/**/*.rs"]),
     deps = [
-        "@io_cargo_libc//libc-0.2.21:libc",
+        "@io_crates_libc//libc-0.2.21:libc",
     ],
     rustc_flags = [
         "--cap-lints warn"
@@ -1735,7 +846,67 @@ rust_library(
 )
 
 new_crate_repository(
-    name = "crates_io_tar"
+    name = "io_crates_kernel32_sys"
+    crate_name = "kernel32-sys",
+    crate_version = "0.2.2",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "kernel32_sys"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_winapi//winapi-0.2.8:winapi",
+        "@io_crates_winapi_build//winapi_build-0.1.1:winapi_build",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_flate2"
+    crate_name = "flate2",
+    crate_version = "0.2.17",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "flate2"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_miniz_sys//miniz_sys-0.1.9:miniz_sys",
+        "@io_crates_libc//libc-0.2.21:libc",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+        "miniz-sys",
+        "default",
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_tar"
     crate_name = "tar",
     crate_version = "0.4.10",
     build_file_content = """
@@ -1751,13 +922,838 @@ rust_library(
     name = "tar"
     srcs = glob(["lib.rs", "src/**/*.rs"]),
     deps = [
-        "@io_cargo_filetime//filetime-0.1.10:filetime",
-        "@io_cargo_libc//libc-0.2.21:libc",
+        "@io_crates_libc//libc-0.2.21:libc",
+        "@io_crates_filetime//filetime-0.1.10:filetime",
     ],
     rustc_flags = [
         "--cap-lints warn"
     ],
     crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_gcc"
+    crate_name = "gcc",
+    crate_version = "0.3.43",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "gcc"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_regex_syntax"
+    crate_name = "regex-syntax",
+    crate_version = "0.3.9",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "regex_syntax"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_foreign_types"
+    crate_name = "foreign-types",
+    crate_version = "0.2.0",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "foreign_types"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_psapi_sys"
+    crate_name = "psapi-sys",
+    crate_version = "0.1.0",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "psapi_sys"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_winapi_build//winapi_build-0.1.1:winapi_build",
+        "@io_crates_winapi//winapi-0.2.8:winapi",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_libz_sys"
+    crate_name = "libz-sys",
+    crate_version = "1.0.13",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "libz_sys"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_pkg_config//pkg_config-0.3.9:pkg_config",
+        "@io_crates_libc//libc-0.2.21:libc",
+        "@io_crates_gcc//gcc-0.3.43:gcc",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_gdi32_sys"
+    crate_name = "gdi32-sys",
+    crate_version = "0.2.0",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "gdi32_sys"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_winapi_build//winapi_build-0.1.1:winapi_build",
+        "@io_crates_winapi//winapi-0.2.8:winapi",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_regex"
+    crate_name = "regex",
+    crate_version = "0.1.80",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "regex"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_utf8_ranges//utf8_ranges-0.1.3:utf8_ranges",
+        "@io_crates_aho_corasick//aho_corasick-0.5.3:aho_corasick",
+        "@io_crates_thread_local//thread_local-0.2.7:thread_local",
+        "@io_crates_memchr//memchr-0.1.11:memchr",
+        "@io_crates_regex_syntax//regex_syntax-0.3.9:regex_syntax",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_git2"
+    crate_name = "git2",
+    crate_version = "0.6.4",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "git2"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_openssl_sys//openssl_sys-0.9.7:openssl_sys",
+        "@io_crates_libgit2_sys//libgit2_sys-0.6.7:libgit2_sys",
+        "@io_crates_openssl_probe//openssl_probe-0.1.0:openssl_probe",
+        "@io_crates_bitflags//bitflags-0.7.0:bitflags",
+        "@io_crates_libc//libc-0.2.21:libc",
+        "@io_crates_url//url-1.4.0:url",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+        "curl",
+        "ssh",
+        "openssl-probe",
+        "https",
+        "default",
+        "openssl-sys",
+        "libgit2-sys",
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_docopt"
+    crate_name = "docopt",
+    crate_version = "0.6.86",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "docopt"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_strsim//strsim-0.5.2:strsim",
+        "@io_crates_regex//regex-0.1.80:regex",
+        "@io_crates_rustc_serialize//rustc_serialize-0.3.22:rustc_serialize",
+        "@io_crates_lazy_static//lazy_static-0.2.4:lazy_static",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_shell_escape"
+    crate_name = "shell-escape",
+    crate_version = "0.1.3",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "shell_escape"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_curl"
+    crate_name = "curl",
+    crate_version = "0.4.6",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "curl"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_winapi//winapi-0.2.8:winapi",
+        "@io_crates_libc//libc-0.2.21:libc",
+        "@io_crates_openssl_probe//openssl_probe-0.1.0:openssl_probe",
+        "@io_crates_openssl_sys//openssl_sys-0.9.7:openssl_sys",
+        "@io_crates_curl_sys//curl_sys-0.3.10:curl_sys",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_term"
+    crate_name = "term",
+    crate_version = "0.4.5",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "term"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_kernel32_sys//kernel32_sys-0.2.2:kernel32_sys",
+        "@io_crates_winapi//winapi-0.2.8:winapi",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+        "default",
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_net2"
+    crate_name = "net2",
+    crate_version = "0.2.27",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "net2"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_cfg_if//cfg_if-0.1.0:cfg_if",
+        "@io_crates_ws2_32_sys//ws2_32_sys-0.2.1:ws2_32_sys",
+        "@io_crates_kernel32_sys//kernel32_sys-0.2.2:kernel32_sys",
+        "@io_crates_libc//libc-0.2.21:libc",
+        "@io_crates_winapi//winapi-0.2.8:winapi",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_env_logger"
+    crate_name = "env_logger",
+    crate_version = "0.3.5",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "env_logger"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "//my/special/override",
+        "@io_crates_regex//regex-0.1.80:regex",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+        "regex",
+        "default",
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_strsim"
+    crate_name = "strsim",
+    crate_version = "0.5.2",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "strsim"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_thread_id"
+    crate_name = "thread-id",
+    crate_version = "2.0.0",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "thread_id"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_libc//libc-0.2.21:libc",
+        "@io_crates_kernel32_sys//kernel32_sys-0.2.2:kernel32_sys",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_libssh2_sys"
+    crate_name = "libssh2-sys",
+    crate_version = "0.2.5",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "libssh2_sys"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_cmake//cmake-0.1.21:cmake",
+        "@io_crates_libz_sys//libz_sys-1.0.13:libz_sys",
+        "@io_crates_libc//libc-0.2.21:libc",
+        "@io_crates_openssl_sys//openssl_sys-0.9.7:openssl_sys",
+        "@io_crates_pkg_config//pkg_config-0.3.9:pkg_config",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_winapi_build"
+    crate_name = "winapi-build",
+    crate_version = "0.1.1",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "winapi_build"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_miow"
+    crate_name = "miow",
+    crate_version = "0.1.5",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "miow"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_net2//net2-0.2.27:net2",
+        "@io_crates_winapi//winapi-0.2.8:winapi",
+        "@io_crates_kernel32_sys//kernel32_sys-0.2.2:kernel32_sys",
+        "@io_crates_ws2_32_sys//ws2_32_sys-0.2.1:ws2_32_sys",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_crossbeam"
+    crate_name = "crossbeam",
+    crate_version = "0.2.10",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "crossbeam"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_tempdir"
+    crate_name = "tempdir",
+    crate_version = "0.3.5",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "tempdir"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_rand//rand-0.3.15:rand",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_idna"
+    crate_name = "idna",
+    crate_version = "0.1.0",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "idna"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_matches//matches-0.1.4:matches",
+        "@io_crates_unicode_normalization//unicode_normalization-0.1.4:unicode_normalization",
+        "@io_crates_unicode_bidi//unicode_bidi-0.2.5:unicode_bidi",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_url"
+    crate_name = "url",
+    crate_version = "1.4.0",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "url"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_idna//idna-0.1.0:idna",
+        "@io_crates_matches//matches-0.1.4:matches",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_unicode_normalization"
+    crate_name = "unicode-normalization",
+    crate_version = "0.1.4",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "unicode_normalization"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_fs2"
+    crate_name = "fs2",
+    crate_version = "0.3.0",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "fs2"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_libc//libc-0.2.21:libc",
+        "@io_crates_kernel32_sys//kernel32_sys-0.2.2:kernel32_sys",
+        "@io_crates_winapi//winapi-0.2.8:winapi",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_memchr"
+    crate_name = "memchr",
+    crate_version = "0.1.11",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "memchr"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+        "@io_crates_libc//libc-0.2.21:libc",
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_glob"
+    crate_name = "glob",
+    crate_version = "0.2.11",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "glob"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+    ],
+)
+"""
+)
+
+new_crate_repository(
+    name = "io_crates_nom"
+    crate_name = "nom",
+    crate_version = "2.2.0",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "nom"
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+    ],
+    rustc_flags = [
+        "--cap-lints warn"
+    ],
+    crate_features = [
+        "default",
+        "stream",
     ],
 )
 """
