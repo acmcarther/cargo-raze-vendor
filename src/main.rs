@@ -4,18 +4,23 @@ extern crate nom;
 extern crate rustc_serialize;
 
 use std::cmp;
+use std::collections::BTreeMap;
 use std::collections::{HashMap, HashSet};
 use std::env;
 use std::fs::{self, File};
 use std::str;
+use std::io::Read;
 use std::io::Write;
 use std::path::Path;
+use std::io;
+use rustc_serialize::hex::ToHex;
 
 use cargo::ops::Packages;
 use cargo::core::{SourceId, Dependency, Workspace};
 use cargo::ops;
 use cargo::CliResult;
 use cargo::util::{human, CliError, ChainError, ToUrl, Config};
+use cargo::util::Sha256;
 
 // Sidestep format!'s "string literals only" stipulation
 macro_rules! NEW_CRATE_REPOSITORY_TEMPLATE {() => (r#"
@@ -82,6 +87,30 @@ rust_library(
 alias(
     name = "{sanitized_crate_name}",
     actual = "@io_crates_{sanitized_crate_name}//:{sanitized_crate_name}",
+)
+"#)}
+
+macro_rules! BUILD_RULE_TEMPLATE {() => (r#"# THIS IS A GENERATED FILE! DO NOT MODIFY DIRECTLY!
+# Instead, override this dependency using the --overrides flag to cargo raze
+
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_library",
+)
+rust_library(
+    name = "{sanitized_crate_name}",
+    srcs = glob(["lib.rs", "src/**/*.rs"]),
+    deps = [
+{comma_separated_cargo_deps}    ],
+    rustc_flags = [
+        "--cap-lints warn",
+    ],
+    crate_features = [
+{comma_separated_features}    ],
 )
 "#)}
 
@@ -214,6 +243,11 @@ fn real_main(options: Options, config: &Config) -> CliResult<Option<()>> {
         human("failed to load pkg lockfile")
     })?;
 
+    let hash = cargo::util::hex::short_hash(&registry_id);
+    let ident = registry_id.url().host().unwrap().to_string();
+    let part = format!("{}-{}", ident, hash);
+    let src = config.registry_source_path().join(&part);
+
     let mut ids = resolve.iter()
                      .filter(|id| *id.source_id() == registry_id)
                      .cloned()
@@ -228,8 +262,6 @@ fn real_main(options: Options, config: &Config) -> CliResult<Option<()>> {
 
 
     let _ = fs::create_dir(&local_dst);
-
-    let mut crate_decls = Vec::new();
 
     for id in ids.iter() {
         let vers = format!("={}", id.version());
@@ -262,21 +294,35 @@ fn real_main(options: Options, config: &Config) -> CliResult<Option<()>> {
           continue
         }
 
-        // TODO(acmcarther): Filter dev_dependencies and build_dependencies out of this list, and
-        // emit a warning.
+        // TODO: handle this properly
+        registry.download(id).unwrap();
+
+        // Next up, copy it to the vendor directory
+        let name = format!("{}-{}", id.name(), id.version());
+        let src = src.join(&name).into_path_unlocked();
+        let dst_name = format!("{}-{}", id.name().replace("-","_"), id.version());
+        let dst = local_dst.join(&dst_name);
+        let _ = fs::remove_dir_all(&dst);
+
+        let mut map = BTreeMap::new();
+        try!(cp_r(&src, &dst, &dst, &mut map).chain_error(|| {
+            human(format!("failed to copy over vendored sources for: {}", id))
+        }));
+
+        // TODO(acmcarther): Filter build_dependencies out of this list, and
+        // emit a warning if we find one
         let mut dep_strs = resolve.deps(id).into_iter()
           .map(|dep| {
             if override_name_and_ver_to_path.contains_key(&(dep.name().to_owned(), dep.version().to_string())) {
               format!("        \"{}\",\n", override_name_and_ver_to_path.get(&(dep.name().to_owned(), dep.version().to_string())).unwrap())
             } else {
-              format!("        \"@io_crates_{sanitized_name}//:{sanitized_name}\",\n", sanitized_name=dep.name().replace("-", "_"))
+              format!("        \"//{sanitized_name}-{version}:{sanitized_name}\",\n", sanitized_name=dep.name().replace("-", "_"), version=dep.version().to_string())
             }
           })
           .collect::<Vec<String>>();
 
         dep_strs.sort();
         let dep_str = dep_strs.into_iter().collect::<String>();
-
 
         // TODO(acmcarther): This will break as of cargo commit 50f1c172
         let mut feature_strs = resolve.features(id)
@@ -288,21 +334,60 @@ fn real_main(options: Options, config: &Config) -> CliResult<Option<()>> {
         feature_strs.sort();
         let feature_str = feature_strs.into_iter().collect::<String>();
 
-        let cargo_crate = format!(NEW_HTTP_ARCHIVE_TEMPLATE!(),
-                                  crate_name=id.name(),
+        let build_contents = format!(BUILD_RULE_TEMPLATE!(),
                                   sanitized_crate_name=id.name().replace("-", "_"),
-                                  crate_version=id.version(),
                                   comma_separated_cargo_deps=dep_str,
                                   comma_separated_features=feature_str);
-        crate_decls.push(cargo_crate)
+        let build_file_path = dst.join("BUILD");
+        try!(File::create(&build_file_path).and_then(|mut f| f.write_all(build_contents.as_bytes())).chain_error(|| {
+            human(format!("failed to create: `{}`", build_file_path.display()))
+        }));
     }
-
-    let crate_decl_str = crate_decls.into_iter().collect::<String>();
-    let workspace_str = format!(ROOT_WORKSPACE_TEMPLATE!(), crate_decl_str);
     let workspace_path = local_dst.join("WORKSPACE");
-    try!(File::create(&workspace_path).and_then(|mut f| f.write_all(workspace_str.as_bytes())).chain_error(|| {
+    try!(File::create(&workspace_path).chain_error(|| {
         human(format!("failed to create: `{}`", workspace_path.display()))
     }));
 
     Ok(None)
+}
+fn cp_r(src: &Path,
+        dst: &Path,
+        root: &Path,
+        cksums: &mut BTreeMap<String, String>) -> io::Result<()> {
+    try!(fs::create_dir(dst));
+    for entry in try!(src.read_dir()) {
+        let entry = try!(entry);
+
+        // Skip .gitattributes as they're not relevant to builds most of the
+        // time and if we respect them (e.g. in git) then it'll probably mess
+        // with the checksums.
+        if entry.file_name().to_str() == Some(".gitattributes") {
+            continue
+        }
+
+        let src = entry.path();
+        let dst = dst.join(entry.file_name());
+        if try!(entry.file_type()).is_dir() {
+            try!(cp_r(&src, &dst, root, cksums));
+        } else {
+            try!(fs::copy(&src, &dst));
+            let rel = dst.strip_prefix(root).unwrap().to_str().unwrap();
+            cksums.insert(rel.replace("\\", "/"), try!(sha256(&dst)));
+        }
+    }
+    Ok(())
+}
+
+fn sha256(p: &Path) -> io::Result<String> {
+    let mut file = try!(File::open(p));
+    let mut sha = Sha256::new();
+    let mut buf = [0; 2048];
+    loop {
+        let n = try!(file.read(&mut buf));
+        if n == 0 {
+            break
+        }
+        sha.update(&buf[..n]);
+    }
+    Ok(sha.finish().to_hex())
 }
