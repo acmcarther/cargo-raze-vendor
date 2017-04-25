@@ -31,8 +31,8 @@ A `vendor` invocation will yield the full source code, supplemented with BUILD f
 ## Supported features
 
 - Build rule generation in vendored source format, or in WORKSPACE format
-Vendored: [acmcarther/raze-manual-example](https://github.com/acmcarther/raze-manual-example)
-WORKSPACE: [acmcarther/raze-autogen-example](https://github.com/acmcarther/raze-autogen-example)
+  - Vendored: [acmcarther/raze-manual-example](https://github.com/acmcarther/raze-manual-example)
+  - WORKSPACE: [acmcarther/raze-autogen-example](https://github.com/acmcarther/raze-autogen-example)
 - Platform specific dependencies for the environment `raze` is run on
 - Feature flag propagation
 - Dependency overriding
