@@ -3,68 +3,25 @@ extern crate cargo;
 extern crate nom;
 extern crate rustc_serialize;
 
+mod common;
+mod vendor;
+mod workspace;
+
+use common::RazePackage;
 use std::cmp;
-use std::collections::BTreeMap;
 use std::collections::{HashMap, HashSet};
 use std::env;
-use std::fs::{self, File};
+use std::fs;
 use std::str;
-use std::io::Write;
-use std::io::Read;
-use std::io;
 use std::path::Path;
-use rustc_serialize::hex::ToHex;
 
 use cargo::ops::Packages;
-use cargo::core::{Resolve, Registry, PackageId, SourceId, Dependency, Workspace};
+use cargo::core::dependency::Kind;
+use cargo::core::SourceId;
+use cargo::core::Workspace;
 use cargo::ops;
 use cargo::CliResult;
-use cargo::core::Source;
 use cargo::util::{human, CliError, ChainError, ToUrl, Config};
-use cargo::util::Sha256;
-
-// Sidestep format!'s "string literals only" stipulation
-macro_rules! BUILD_FILE_TEMPLATE {() => (r#"package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
-    "rust_library",
-)
-rust_library(
-    name = "{sanitized_crate_name}",
-    srcs = glob(["lib.rs", "src/**/*.rs"]),
-    deps = [
-{comma_separated_cargo_deps}    ],
-    rustc_flags = [
-        "--cap-lints warn",
-    ],
-    crate_features = [
-{comma_separated_features}    ],
-)"#)}
-
-macro_rules! NEW_HTTP_ARCHIVE_TEMPLATE {() => (r#"new_http_archive(
-    name = "io_crates_{sanitized_crate_name}_{sanitized_crate_version}",
-    urls = [
-      # Bazel's downloader renders HTTP page instead of downloading for some reason.
-      #"https://crates.io/api/v1/crates/{crate_name}/{crate_version}/download"
-      "https://crates-io.s3-us-west-1.amazonaws.com/crates/{crate_name}/{crate_name}-{crate_version}.crate",
-    ],
-    type = "tar.gz",
-    strip_prefix = "{crate_name}-{crate_version}",
-    build_file_content = """
-{build_file_content}
-""",
-)
-"#)}
-
-macro_rules! VENDOR_DIR_WORKSPACE_SNIPPET {() => (r#"
-local_repository(
-    name = "{name}",
-    path = __workspace_dir__ + "{path}"
-)"#)}
-
 
 /** Define parser for --overrides flag */
 fn isnt_plus(chr: char) -> bool { chr != '+' }
@@ -102,13 +59,6 @@ struct DependencyOverride {
     pub bazel_path: String,
 }
 
-#[derive(Debug)]
-struct RazePackage {
-  pub id: PackageId,
-  pub features: HashSet<String>,
-  pub dependencies: Vec<Dependency>,
-}
-
 fn main() {
     // TODO(acmcarther): This will break soon. The method call is now "call_main_without_stdin"
     cargo::execute_main_without_stdin(real_main, false, r#"
@@ -136,7 +86,6 @@ fn real_main(options: Options, config: &Config) -> CliResult<Option<()>> {
                           &options.flag_color,
                           /* frozen = */ false,
                           /* locked = */ false));
-
     let vendor_destination = options.flag_vendor.as_ref().map(|p| Path::new(p));
     let generate_workspace_rules = options.flag_generate.unwrap_or(false);
     if vendor_destination.is_none() && !generate_workspace_rules {
@@ -169,7 +118,7 @@ fn real_main(options: Options, config: &Config) -> CliResult<Option<()>> {
       .map(|entry| ((entry.name, entry.version), entry.bazel_path))
       .collect();
 
-    let (_, resolve) = ops::resolve_ws_precisely(
+    let (packages, resolve) = ops::resolve_ws_precisely(
             &ws,
             None,
             &[],
@@ -178,6 +127,7 @@ fn real_main(options: Options, config: &Config) -> CliResult<Option<()>> {
             &specs).chain_error(|| {
         human("failed to load pkg lockfile")
     })?;
+
 
     let mut package_ids = resolve.iter()
                      .filter(|id| *id.source_id() == registry_id)
@@ -194,33 +144,6 @@ fn real_main(options: Options, config: &Config) -> CliResult<Option<()>> {
     let mut raze_packages = Vec::new();
 
     for id in package_ids.iter() {
-        let vers = format!("={}", id.version());
-        let dep = try!(Dependency::parse_no_deprecated(id.name(),
-                                                       Some(&vers[..]),
-                                                       id.source_id()));
-        {
-          let mut vec = try!(registry.query(&dep));
-
-          // Some versions have "build metadata" which is ignored by semver when
-          // matching. That means that `vec` being returned may have more than one
-          // element, so we filter out all non-equivalent versions with different
-          // build metadata than the one we're looking for.
-          //
-          // Note that we also don't compare semver versions directly as the
-          // default equality ignores build metadata.
-          if vec.len() > 1 {
-              vec.retain(|version| {
-                  version.package_id().version().to_string() == id.version().to_string()
-              });
-          }
-          if vec.len() == 0 {
-              return Err(CliError::new(human(format!("could not find package: {}", id)), 101))
-          }
-          if vec.len() > 1 {
-              return Err(CliError::new(human(format!("found too many packages: {}", id)), 101))
-          }
-        }
-
         // Skip generating new_crate_repository for overrides
         if override_name_and_ver_to_path.contains_key(&(id.name().to_owned(), id.version().to_string())) {
           continue
@@ -228,146 +151,53 @@ fn real_main(options: Options, config: &Config) -> CliResult<Option<()>> {
 
         raze_packages.push(RazePackage {
           id: id.clone(),
+          package: packages.get(id).unwrap().clone(),
           // TODO(acmcarther): This will break as of cargo commit 50f1c172
           features: resolve.features(id)
             .cloned()
             .unwrap_or(HashSet::new()),
-          dependencies: Vec::new()
         });
     }
+    {
+        let mut printed_warning = false;
+        for raze_pkg in raze_packages.iter() {
+            if raze_pkg.package.dependencies().iter().any(|dep| dep.kind() == Kind::Build) {
+                printed_warning = true;
+                println!("WARNING: Crate <{}-{}> appears to contain a Build dependency.",
+                    raze_pkg.id.name(), raze_pkg.id.version());
 
-    println!("raze_packages: {:?}", raze_packages);
+            }
+        }
+        if printed_warning {
+            println!("WARNING: You will probably need to override Build dependent crates with the --override flag and provide a custom BUILD rule.");
+        }
+    }
+
+    let platform_triple = config.rustc()?.host.clone();
 
     if generate_workspace_rules {
-        try!(materialize_workspace(&resolve, &raze_packages, &override_name_and_ver_to_path));
+        try!(workspace::materialize(
+            &resolve,
+            &raze_packages,
+            &override_name_and_ver_to_path,
+            &platform_triple));
     }
 
     if vendor_destination.is_some() {
-        try!(materialize_vendored_dependencies(
-            &resolve, 
-            &mut registry, 
-            &raze_packages, 
-            vendor_destination.unwrap(), 
+        try!(vendor::materialize(
+            &resolve,
+            &mut registry,
+            &raze_packages,
+            vendor_destination.unwrap(),
             registry_id,
             &config,
-            &override_name_and_ver_to_path));
+            &override_name_and_ver_to_path,
+            &platform_triple));
+
     }
 
     Ok(None)
 }
-
-fn materialize_workspace(
-        resolve: &Resolve, 
-        raze_packages: &Vec<RazePackage>,
-        override_name_and_ver_to_path: &HashMap<(String, String), String>) -> CliResult<Option<()>> {
-    let mut bazel_workspace_entries = Vec::new();
-
-    for raze_package in raze_packages.iter() {
-        let &RazePackage {ref id, ref features, ..} = raze_package;
-        // TODO(acmcarther): Filter build_dependencies out of this list, and emit a warning.
-        let mut dep_strs = resolve.deps(id).into_iter()
-          .map(|dep| {
-            if override_name_and_ver_to_path.contains_key(&(dep.name().to_owned(), dep.version().to_string())) {
-              format!("        \"{}\",\n", override_name_and_ver_to_path.get(&(dep.name().to_owned(), dep.version().to_string())).unwrap())
-            } else {
-              format!("        \"@io_crates_{sanitized_name}_{sanitized_crate_version}//:{sanitized_name}\",\n",
-                      sanitized_name=dep.name().replace("-", "_"),
-                      sanitized_crate_version=dep.version().to_string().replace(".", "_"))
-            }
-          })
-          .collect::<Vec<String>>();
-        dep_strs.sort();
-        let dep_str = dep_strs.into_iter().collect::<String>();
-        let feature_str = bazelize_features(features);
-
-        let build_file_content = format!(BUILD_FILE_TEMPLATE!(),
-                                  sanitized_crate_name=id.name().replace("-", "_"),
-                                  comma_separated_cargo_deps=dep_str,
-                                  comma_separated_features=feature_str);
-
-        let new_http_archive_decl = format!(NEW_HTTP_ARCHIVE_TEMPLATE!(),
-                                  crate_name=id.name(),
-                                  sanitized_crate_name=id.name().replace("-", "_"),
-                                  crate_version=id.version(),
-                                  sanitized_crate_version=id.version().to_string().replace(".", "_"),
-                                  build_file_content=build_file_content);
-        bazel_workspace_entries.push(new_http_archive_decl)
-    }
-    let bazel_workspace_content = bazel_workspace_entries.into_iter().collect::<String>();
-    let workspace_path = Path::new("raze.WORKSPACE");
-    try!(File::create(workspace_path).and_then(|mut f| f.write_all(bazel_workspace_content.as_bytes())).chain_error(|| {
-        human(format!("failed to create: `{}`", workspace_path.display()))
-    }));
-
-    println!("--generate: A raze.WORKSPACE was created containing the generated dependencies. Integrate this into your existing WORKSPACE.");
-    Ok(None)
-}
-
-fn materialize_vendored_dependencies(
-        resolve: &Resolve,
-        registry: &mut Source,
-        raze_packages: &Vec<RazePackage>,
-        destination: &Path,
-        registry_id: SourceId,
-        config: &Config,
-        override_name_and_ver_to_path: &HashMap<(String, String), String>) -> CliResult<Option<()>> {
-    let _ = fs::create_dir(&destination);
-    let hash = cargo::util::hex::short_hash(&registry_id);
-    let ident = registry_id.url().host().unwrap().to_string();
-    let part = format!("{}-{}", ident, hash);
-    let src = config.registry_source_path().join(&part);
-
-    for raze_package in raze_packages.iter() {
-        let &RazePackage {ref id, ref features, ..} = raze_package;
-        // TODO(acmcarther): handle this properly
-        registry.download(id).unwrap();
-
-        // Next up, copy it to the vendor directory
-        let name = format!("{}-{}", id.name(), id.version());
-        let src = src.join(&name).into_path_unlocked();
-        let dst_name = format!("{}-{}", id.name().replace("-","_"), id.version());
-        let dst = destination.join(&dst_name);
-        let _ = fs::remove_dir_all(&dst);
-        let mut map = BTreeMap::new();
-        try!(cp_r(&src, &dst, &dst, &mut map).chain_error(|| {
-            human(format!("failed to copy over vendored sources for: {}", id))
-        }));
-
-        // TODO(acmcarther): Filter build_dependencies out of this list, and emit a warning.
-        let mut dep_strs = resolve.deps(id).into_iter()
-          .map(|dep| {
-            if override_name_and_ver_to_path.contains_key(&(dep.name().to_owned(), dep.version().to_string())) {
-              format!("        \"{}\",\n", override_name_and_ver_to_path.get(&(dep.name().to_owned(), dep.version().to_string())).unwrap())
-            } else {
-              format!("        \"//{crate_full_name}:{sanitized_name}\",\n",
-                      crate_full_name=format!("{}-{}", dep.name().replace("-", "_"), dep.version()),
-                      sanitized_name=dep.name().replace("-", "_"))
-            }
-          })
-          .collect::<Vec<String>>();
-        dep_strs.sort();
-        let dep_str = dep_strs.into_iter().collect::<String>();
-        let feature_str = bazelize_features(features);
-        let build_file_content = format!(BUILD_FILE_TEMPLATE!(),
-                                  sanitized_crate_name=id.name().replace("-", "_"),
-                                  comma_separated_cargo_deps=dep_str,
-                                  comma_separated_features=feature_str);
-        let build_file_path = dst.join("BUILD");
-        try!(File::create(&build_file_path).and_then(|mut f| f.write_all(build_file_content.as_bytes())).chain_error(|| {
-            human(format!("failed to create: `{}`", build_file_path.display()))
-        }));
-    }
-    let workspace_path = destination.join("WORKSPACE");
-    try!(File::create(&workspace_path).chain_error(|| {
-        human(format!("failed to create: `{}`", workspace_path.display()))
-    }));
-
-    println!("--vendor: Add the following snippet to your local workspace so bazel can find it: {}", format!(VENDOR_DIR_WORKSPACE_SNIPPET!(),
-      name = "raze",
-      path = destination.to_string_lossy()[1..].to_owned()));
-    Ok(None)
-}
-
 
 fn load_registry(flag_host: Option<String>, config: &Config) -> CliResult<SourceId> {
     let source_id_from_registry =
@@ -375,15 +205,6 @@ fn load_registry(flag_host: Option<String>, config: &Config) -> CliResult<Source
 
     source_id_from_registry.unwrap_or_else(|| SourceId::crates_io(config))
       .map_err(CliError::from)
-}
-
-fn bazelize_features(features: &HashSet<String>) -> String {
-    let mut feature_strs = features
-      .iter()
-      .map(|f| format!("        \"{}\",\n", f))
-      .collect::<Vec<String>>();
-    feature_strs.sort();
-    return feature_strs.into_iter().collect::<String>();
 }
 
 fn find_lock_file_path(flag_sync: Option<String>) -> CliResult<String> {
@@ -399,44 +220,3 @@ fn find_lock_file_path(flag_sync: Option<String>) -> CliResult<String> {
     }
 }
 
-fn cp_r(src: &Path,
-        dst: &Path,
-        root: &Path,
-        cksums: &mut BTreeMap<String, String>) -> io::Result<()> {
-    try!(fs::create_dir(dst));
-    for entry in try!(src.read_dir()) {
-        let entry = try!(entry);
-
-        // Skip .gitattributes as they're not relevant to builds most of the
-        // time and if we respect them (e.g. in git) then it'll probably mess
-        // with the checksums.
-        if entry.file_name().to_str() == Some(".gitattributes") {
-            continue
-        }
-
-        let src = entry.path();
-        let dst = dst.join(entry.file_name());
-        if try!(entry.file_type()).is_dir() {
-            try!(cp_r(&src, &dst, root, cksums));
-        } else {
-            try!(fs::copy(&src, &dst));
-            let rel = dst.strip_prefix(root).unwrap().to_str().unwrap();
-            cksums.insert(rel.replace("\\", "/"), try!(sha256(&dst)));
-        }
-    }
-    Ok(())
-}
-
-fn sha256(p: &Path) -> io::Result<String> {
-    let mut file = try!(File::open(p));
-    let mut sha = Sha256::new();
-    let mut buf = [0; 2048];
-    loop {
-        let n = try!(file.read(&mut buf));
-        if n == 0 {
-            break
-        }
-        sha.update(&buf[..n]);
-    }
-    Ok(sha.finish().to_hex())
-}

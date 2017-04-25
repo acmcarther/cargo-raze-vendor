@@ -15,7 +15,7 @@ The current implementation does not properly handle platform specific dependenci
 Example invocation (in a Cargo.toml+Cargo.lock bearing directory)
 ```
 cargo install raze
-cargo raze . --overrides log-0.3.7:@custom-log//log:log --generate
+cargo raze --overrides log-0.3.7:@custom-log//log:log --generate
 ```
 
 A `generate` invocation will yield a series of new_http_archive() invocations to stdout that can be included in the repository's WORKSPACE file to automatically include the selected crates, with generated BUILD rules. An `overrides` flag is provided to allow users to override references of selected dependencies with their own defined rules. This is a useful feature when the automatically generated build rule fails to compile. Typically, rules that have complex system library dependencies, or leverage `build.rs` in interesting ways will require a custom override.
