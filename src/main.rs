@@ -16,7 +16,7 @@ use std::path::Path;
 use rustc_serialize::hex::ToHex;
 
 use cargo::ops::Packages;
-use cargo::core::{SourceId, Dependency, Workspace};
+use cargo::core::{PackageId, SourceId, Dependency, Workspace};
 use cargo::ops;
 use cargo::CliResult;
 use cargo::util::{human, CliError, ChainError, ToUrl, Config};
@@ -43,8 +43,7 @@ rust_library(
 {comma_separated_features}    ],
 )"#)}
 
-macro_rules! NEW_HTTP_ARCHIVE_TEMPLATE {() => (r#"
-new_http_archive(
+macro_rules! NEW_HTTP_ARCHIVE_TEMPLATE {() => (r#"new_http_archive(
     name = "io_crates_{sanitized_crate_name}_{sanitized_crate_version}",
     urls = [
       # Bazel's downloader renders HTTP page instead of downloading for some reason.
@@ -88,7 +87,7 @@ struct Options {
     flag_sync: Option<String>,
     flag_host: Option<String>,
     flag_verbose: u32,
-    flag_generate_workspace: Option<bool>,
+    flag_generate: Option<bool>,
     flag_vendor: Option<String>,
     flag_quiet: Option<bool>,
     flag_color: Option<String>,
@@ -100,6 +99,13 @@ struct DependencyOverride {
     pub name: String,
     pub version: String,
     pub bazel_path: String,
+}
+
+#[derive(Debug)]
+struct RazePackage {
+  pub id: PackageId,
+  pub features: HashSet<String>,
+  pub dependencies: Vec<Dependency>,
 }
 
 fn main() {
@@ -117,7 +123,7 @@ Options:
     -v, --verbose            Use verbose output
     -q, --quiet              No output printed to stdout
     --color WHEN             Coloring: auto, always, never
-    --generate_workspace     Generate a series of WORKSPACE rules to be included manually
+    -g, --generate           Generate a series of WORKSPACE rules to be included manually
     --vendor WHERE           Pull sources and generate BUILD files locally
     --overrides LIST         Comma separated cargo dependency overrides ["libc+0.2.21:@workspace//path:dep,..."]
 "#)
@@ -155,7 +161,9 @@ fn real_main(options: Options, config: &Config) -> CliResult<Option<()>> {
 
     // TODO(acmcarther): Fix unwrap. I'm unwrapping here temporarily because Nom's err is hard to
     // convert to CargoError
-    let overrides = options.flag_overrides.as_ref().map(|f| parse_overrides(f).to_result().unwrap()).unwrap_or(Vec::new());
+    let overrides = options.flag_overrides.as_ref()
+      .map(|f| parse_overrides(f).to_result().unwrap())
+      .unwrap_or(Vec::new());
     let override_name_and_ver_to_path: HashMap<(String, String), String> = overrides.into_iter()
       .map(|entry| ((entry.name, entry.version), entry.bazel_path))
       .collect();
@@ -193,36 +201,48 @@ fn real_main(options: Options, config: &Config) -> CliResult<Option<()>> {
     }
     let mut bazel_workspace_entries = Vec::new();
 
+    let mut raze_packages = Vec::new();
+
     for id in package_ids.iter() {
         let vers = format!("={}", id.version());
         let dep = try!(Dependency::parse_no_deprecated(id.name(),
                                                        Some(&vers[..]),
                                                        id.source_id()));
-        let mut vec = try!(registry.query(&dep));
+        {
+          let mut vec = try!(registry.query(&dep));
 
-        // Some versions have "build metadata" which is ignored by semver when
-        // matching. That means that `vec` being returned may have more than one
-        // element, so we filter out all non-equivalent versions with different
-        // build metadata than the one we're looking for.
-        //
-        // Note that we also don't compare semver versions directly as the
-        // default equality ignores build metadata.
-        if vec.len() > 1 {
-            vec.retain(|version| {
-                version.package_id().version().to_string() == id.version().to_string()
-            });
-        }
-        if vec.len() == 0 {
-            return Err(CliError::new(human(format!("could not find package: {}", id)), 101))
-        }
-        if vec.len() > 1 {
-            return Err(CliError::new(human(format!("found too many packages: {}", id)), 101))
+          // Some versions have "build metadata" which is ignored by semver when
+          // matching. That means that `vec` being returned may have more than one
+          // element, so we filter out all non-equivalent versions with different
+          // build metadata than the one we're looking for.
+          //
+          // Note that we also don't compare semver versions directly as the
+          // default equality ignores build metadata.
+          if vec.len() > 1 {
+              vec.retain(|version| {
+                  version.package_id().version().to_string() == id.version().to_string()
+              });
+          }
+          if vec.len() == 0 {
+              return Err(CliError::new(human(format!("could not find package: {}", id)), 101))
+          }
+          if vec.len() > 1 {
+              return Err(CliError::new(human(format!("found too many packages: {}", id)), 101))
+          }
         }
 
         // Skip generating new_crate_repository for overrides
         if override_name_and_ver_to_path.contains_key(&(id.name().to_owned(), id.version().to_string())) {
           continue
         }
+
+        raze_packages.push(RazePackage {
+          id: id.clone(),
+          features: resolve.features(id)
+            .cloned()
+            .unwrap_or(HashSet::new()),
+          dependencies: Vec::new()
+        });
 
         // TODO(acmcarther): This will break as of cargo commit 50f1c172
         let mut feature_strs = resolve.features(id)
@@ -232,6 +252,7 @@ fn real_main(options: Options, config: &Config) -> CliResult<Option<()>> {
           .map(|f| format!("        \"{}\",\n", f))
           .collect::<Vec<String>>();
         feature_strs.sort();
+
         let feature_str = feature_strs.into_iter().collect::<String>();
 
         if generate_workspace_rules {
@@ -305,6 +326,8 @@ fn real_main(options: Options, config: &Config) -> CliResult<Option<()>> {
             }));
         }
     }
+
+    println!("raze_packages: {:?}", raze_packages);
 
     if generate_workspace_rules {
         let bazel_workspace_content = bazel_workspace_entries.into_iter().collect::<String>();
