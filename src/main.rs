@@ -65,7 +65,7 @@ const USAGE: &'static str = r#"
 Generate a Bazel WORKSPACE consisting of resolved dependencies for the current platform
 
 Usage:
-    cargo proto_raze [options]
+    cargo proto-raze [options]
 
 Options:
     -h, --help               Print this message
