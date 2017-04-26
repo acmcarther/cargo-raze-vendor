@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["Alex McArther <acmcarther@gmail.com>"]
 readme = "README.md"
 keywords = ["subcommand"]
+license = "Apache-2.0"
 repository = "https://github.com/acmcarther/cargo-raze-vendor"
 description = """
 A Cargo subcommand to help integrate Cargo dependencies into a Bazel project.
