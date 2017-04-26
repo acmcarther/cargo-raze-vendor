@@ -30,7 +30,7 @@ pub fn materialize(
         resolve: &Resolve,
         raze_packages: &Vec<RazePackage>,
         override_name_and_ver_to_path: &HashMap<(String, String), String>,
-        platform_triple: &str) -> CliResult<Option<()>> {
+        platform_triple: &str) -> CliResult {
     let mut bazel_workspace_entries = Vec::new();
 
     for raze_package in raze_packages.iter() {
@@ -77,6 +77,6 @@ pub fn materialize(
     }));
 
     println!("--generate: A raze.WORKSPACE was created containing the generated dependencies. Integrate this into your existing WORKSPACE.");
-    Ok(None)
+    Ok(())
 }
 

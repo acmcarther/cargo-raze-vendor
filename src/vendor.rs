@@ -32,7 +32,7 @@ pub fn materialize(
         registry_id: SourceId,
         config: &Config,
         override_name_and_ver_to_path: &HashMap<(String, String), String>,
-        platform_triple: &str) -> CliResult<Option<()>> {
+        platform_triple: &str) -> CliResult{
     let _ = fs::create_dir(&destination);
     let hash = cargo::util::hex::short_hash(&registry_id);
     let ident = registry_id.url().host().unwrap().to_string();
@@ -94,7 +94,7 @@ pub fn materialize(
     println!("--vendor: Add the following snippet to your local workspace so bazel can find it: {}", format!(VENDOR_DIR_WORKSPACE_SNIPPET!(),
       name = "raze",
       path = destination.to_string_lossy()[1..].to_owned()));
-    Ok(None)
+    Ok(())
 }
 
 pub fn cp_r(src: &Path,

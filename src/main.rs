@@ -15,13 +15,14 @@ use std::fs;
 use std::str;
 use std::path::Path;
 
+use cargo::CargoError;
 use cargo::ops::Packages;
 use cargo::core::dependency::Kind;
 use cargo::core::SourceId;
 use cargo::core::Workspace;
 use cargo::ops;
 use cargo::CliResult;
-use cargo::util::{human, CliError, ChainError, ToUrl, Config};
+use cargo::util::{human, ChainError, ToUrl, Config};
 
 /** Define parser for --overrides flag */
 fn isnt_plus(chr: char) -> bool { chr != '+' }
@@ -59,9 +60,8 @@ struct DependencyOverride {
     pub bazel_path: String,
 }
 
-fn main() {
-    // TODO(acmcarther): This will break soon. The method call is now "call_main_without_stdin"
-    cargo::execute_main_without_stdin(real_main, false, r#"
+// TODO(acmcarther): This will break soon. The method call is now "call_main_without_stdin"
+const USAGE: &'static str = r#"
 Generate a Bazel WORKSPACE consisting of resolved dependencies for the current platform
 
 Usage:
@@ -77,10 +77,21 @@ Options:
     -g, --generate           Generate a series of WORKSPACE rules to be included manually
     --vendor WHERE           Pull sources and generate BUILD files locally
     --overrides LIST         Comma separated cargo dependency overrides ["libc+0.2.21:@workspace//path:dep,..."]
-"#)
+"#;
+
+fn main() {
+
+    let config = Config::default().unwrap();
+    let args = env::args().collect::<Vec<_>>();
+    let result = cargo::call_main_without_stdin(real_main, &config, USAGE, &args, false);
+
+    match result {
+        Err(e) => cargo::handle_cli_error(e, &mut *config.shell()),
+        Ok(()) => {},
+    }
 }
 
-fn real_main(options: Options, config: &Config) -> CliResult<Option<()>> {
+fn real_main(options: Options, config: &Config) -> CliResult {
     try!(config.configure(options.flag_verbose,
                           options.flag_quiet,
                           &options.flag_color,
@@ -90,17 +101,17 @@ fn real_main(options: Options, config: &Config) -> CliResult<Option<()>> {
     let generate_workspace_rules = options.flag_generate.unwrap_or(false);
     if vendor_destination.is_none() && !generate_workspace_rules {
       println!("Not generating vendored dependencies or workspace rules; exiting.");
-      return Ok(None);
+      return Ok(());
     }
 
     if vendor_destination.is_some() && !vendor_destination.unwrap().starts_with("./") {
       println!("Please specify vendor destination as a relative path starting with './'");
-      return Ok(None);
+      return Ok(());
     }
 
     let registry_id = try!(load_registry(options.flag_host, &config));
-    let lockfile_path = try!(find_lock_file_path(options.flag_sync));
-    let lockfile = Path::new(&lockfile_path);
+    try!(verify_lock_file_path(options.flag_sync));
+    let lockfile = Path::new("Cargo.lock");
     let manifest_path = lockfile.parent().unwrap().join("Cargo.toml");
     let manifest = env::current_dir().unwrap().join(&manifest_path);
     let mut registry = registry_id.load(config);
@@ -196,26 +207,24 @@ fn real_main(options: Options, config: &Config) -> CliResult<Option<()>> {
 
     }
 
-    Ok(None)
+    Ok(())
 }
 
-fn load_registry(flag_host: Option<String>, config: &Config) -> CliResult<SourceId> {
+fn load_registry(flag_host: Option<String>, config: &Config) -> Result<SourceId, Box<CargoError>> {
     let source_id_from_registry =
       flag_host.map(|s| s.to_url().map(|url| SourceId::for_registry(&url)).map_err(human));
 
     source_id_from_registry.unwrap_or_else(|| SourceId::crates_io(config))
-      .map_err(CliError::from)
 }
 
-fn find_lock_file_path(flag_sync: Option<String>) -> CliResult<String> {
+fn verify_lock_file_path(flag_sync: Option<String>) -> CliResult {
     match flag_sync {
-        Some(file) => Ok(file),
+        Some(_) => Ok(()),
         None => {
             try!(fs::metadata("Cargo.lock").chain_error(|| {
-                human("could not find `Cargo.lock`, must be run in a directory \
-                       with Cargo.lock or use the `--sync` option")
+              human("failed to find Cargo.lock. Please run `cargo generate_lockfile` first.")
             }));
-            Ok("Cargo.lock".to_owned())
+            Ok(())
         }
     }
 }
