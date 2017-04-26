@@ -1,5 +1,5 @@
 [package]
-name = "cargo-raze-vendor"
+name = "cargo-proto-raze"
 version = "0.1.0"
 authors = ["Alex McArther <acmcarther@gmail.com>"]
 readme = "README.md"

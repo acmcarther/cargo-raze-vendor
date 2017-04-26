@@ -65,7 +65,7 @@ fn main() {
 Generate a Bazel WORKSPACE consisting of resolved dependencies for the current platform
 
 Usage:
-    cargo raze [options]
+    cargo proto_raze [options]
 
 Options:
     -h, --help               Print this message
